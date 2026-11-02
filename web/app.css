@@ -106,11 +106,11 @@ code {
   display: flex; align-items: center; gap: 12px; padding: 0 24px;
   background: var(--card); border-bottom: 1px solid var(--border);
 }
-/* Logo: the designer's "apoptotic-lab." lettering (Monument Grotesk Regular) as one alpha sprite
+/* Logo: the designer's "apoptotic-lab" lettering (Monument Grotesk Regular) as one alpha sprite
    in brand/apoptotic-lab.png, 1380 x 218 source units. Each glyph is a slice of that sprite used as
    a mask, so it takes the text colour in both themes. At rest only "a" and "-lab" show. On hover
    it types like a terminal: a caret appears after "a" and "poptotic" is typed in one letter per
-   step, pushing "-lab" right; then the full stop lands and the caret blinks after it. On leave the
+   step, pushing "-lab" right; then the caret blinks after "lab". On leave the
    letters are deleted in reverse, like backspacing. */
 .logo {
   --lh: 24px; --u: calc(var(--lh) / 218);
@@ -133,18 +133,22 @@ code {
   width: calc(var(--w) * var(--u));
   transition-delay: calc(var(--lead) + var(--i) * var(--step));
 }
-/* Caret: a zero-width anchor in the flow, so typed letters push it right; the bar is drawn by
-   ::after and spans ascender to baseline (source rows 8 to 166). c1 rides the typing, c2 blinks
-   after the full stop. */
-.logo .caret { position: relative; flex: none; width: 0; opacity: 0; }
+/* Caret: a terminal block cursor. A zero-width anchor in the flow, so typed letters push it right;
+   the block is drawn by ::after, one character cell wide and the full line tall. White with
+   mix-blend-mode: difference inverts what is under it, so the character it covers shows in the
+   negative colour in both themes. c1 sits on the "-" while typing; c2 blinks after "lab".
+   Visibility rather than opacity toggles it: an opacity animation would isolate the blend. */
+.logo .caret { position: relative; flex: none; width: 0; visibility: hidden; }
 .logo .caret::after {
-  content: ""; position: absolute; left: calc(9 * var(--u) - .75px); top: calc(8 * var(--u));
-  width: 1.5px; height: calc(158 * var(--u)); background: currentColor;
+  content: ""; position: absolute; left: calc(var(--off, 0) * var(--u)); top: calc(4 * var(--u));
+  width: calc(90 * var(--u)); height: calc(210 * var(--u));
+  background: #FFFFFF; mix-blend-mode: difference;
 }
+.logo .c2 { --off: 12; }
 .logo:hover .c1 { animation: logo-caret-type calc(var(--lead) + 8 * var(--step)) steps(1) forwards; }
-.logo:hover .c2 { animation: logo-caret-blink 1.06s step-end calc(var(--lead) + 9 * var(--step)) infinite; }
-@keyframes logo-caret-type { 0% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes logo-caret-blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+.logo:hover .c2 { animation: logo-caret-blink 1.06s step-end calc(var(--lead) + 8 * var(--step)) infinite; }
+@keyframes logo-caret-type { 0% { visibility: visible; } 100% { visibility: hidden; } }
+@keyframes logo-caret-blink { 0%, 50% { visibility: visible; } 50.01%, 100% { visibility: hidden; } }
 .crumb-sep { color: var(--border-3); font-size: 18px; font-weight: 300; margin: 0 2px; }
 .crumb { font-size: 14px; color: var(--fg-2); white-space: nowrap; }
 #topbar:has(.crumb:empty) .crumb-sep { display: none; }
