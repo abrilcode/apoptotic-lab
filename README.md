@@ -1,36 +1,66 @@
 <br>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/wordmark-dark.png">
-  <img src="docs/assets/wordmark-light.png" height="40" alt="apoptotic-lab">
-</picture>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-typing-dark.gif">
+    <img src="docs/assets/logo-typing-light.gif" width="380" alt="apoptotic-lab">
+  </picture>
+</p>
 
-<br><br>
+<p align="center">
+  Segmentation and quantification of multichannel fluorescence microscopy images.<br>
+  From raw files to per-cell data in one guided workflow, on your own computer.
+</p>
 
-Segmentation and quantification of multichannel fluorescence microscopy images, in a local web
-app. From raw files to per-object measurements in one guided workflow, on your own machine.
+<p align="center">
+  <a href="https://apoptotic-lab.vercel.app"><b>Open the app</b></a> &nbsp;·&nbsp;
+  <a href="#installation">Install</a> &nbsp;·&nbsp;
+  <a href="#documentation">Docs</a> &nbsp;·&nbsp;
+  <a href="#citation">Cite</a>
+</p>
 
 <br>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/screen-home-dark.png">
-  <img src="docs/assets/screen-home-light.png" width="100%" alt="apoptotic-lab start page: Single image and Multiple images, with the segmentation device, StarDist status and output folder below.">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-segment-dark.png">
+  <img src="docs/assets/hero-segment-light.png" width="100%" alt="Segment step: 178 nuclei on the DAPI channel of a three-channel CZI field, segmented with Cellpose-SAM on the GPU; 20 touching the border are excluded.">
 </picture>
 
 <br>
+
+## How it works
+
+<table>
+  <tr>
+    <td width="25%" valign="top">
+      <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/step-1-raw-data-dark.png"><img src="docs/assets/step-1-raw-data-light.png" alt="Raw data: images grouped by condition, with the control marked."></picture>
+      <br><sub><b>1 · Raw data</b><br>Images grouped by condition from their file names; mark the control.</sub>
+    </td>
+    <td width="25%" valign="top">
+      <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/step-2-segment-dark.png"><img src="docs/assets/step-2-segment-light.png" alt="Segment: every image segmented on the same channel."></picture>
+      <br><sub><b>2 · Segment</b><br>Cellpose-SAM or StarDist on one channel; review and edit every mask.</sub>
+    </td>
+    <td width="25%" valign="top">
+      <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/step-3-measure-dark.png"><img src="docs/assets/step-3-measure-light.png" alt="Measure: every channel measured inside each object."></picture>
+      <br><sub><b>3 · Measure</b><br>Every channel inside each object, with the parameter record and masks.</sub>
+    </td>
+    <td width="25%" valign="top">
+      <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/step-4-analysis-dark.png"><img src="docs/assets/step-4-analysis-light.png" alt="Analysis: positivity per marker against the control condition."></picture>
+      <br><sub><b>4 · Analysis</b><br>Distributions, co-expression and positivity against the control.</sub>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
-- **Input** — CZI, TIFF, PNG and JPEG at native bit depth. Channel names and pixel size from the
-  metadata or the file names.
-- **Segmentation** — Cellpose-SAM for nuclei, cells or other objects on any channel, on CUDA or
-  Apple Silicon GPUs with a CPU fallback. StarDist optional for nuclei.
-- **Review** — inspect and edit every mask in the browser before measuring.
-- **Quantification** — 18 ImageJ-style measurements per object on every channel, sizes in µm,
-  optional background subtraction, border objects excluded by default.
-- **Analysis** — distributions, co-expression and positivity against a control condition.
-- **Reproducibility** — every table exports with a JSON record of its parameters and the final
-  masks.
+| | |
+|---|---|
+| **Input** | CZI, TIFF, PNG and JPEG at native bit depth. Channel names and pixel size from the metadata or the file names. |
+| **Segmentation** | Cellpose-SAM for nuclei, cells or other objects on any channel, on CUDA or Apple Silicon GPUs with a CPU fallback. StarDist optional for nuclei. |
+| **Review** | Inspect and edit every mask in the browser before measuring. |
+| **Quantification** | 18 ImageJ-style measurements per object on every channel, sizes in µm, optional background subtraction, border objects excluded by default. |
+| **Analysis** | Distributions, co-expression and positivity against a control condition. |
+| **Reproducibility** | Every table exports with a JSON record of its parameters and the final masks. |
 
 ## Installation
 
@@ -53,16 +83,26 @@ that matches the driver before `requirements.txt`. StarDist is optional:
 
 ## Usage
 
-```bash
-uvicorn app:app --host 127.0.0.1 --port 8010
-```
+1. **Start the engine** (after the [installation](#installation)) and leave its window open:
 
-Open http://127.0.0.1:8010 and choose a flow.
+   ```bash
+   cd apoptotic-lab && source .venv/bin/activate      # Windows: .venv\Scripts\Activate.ps1
+   uvicorn app:app --host 127.0.0.1 --port 8010
+   ```
 
-| Flow | Steps |
-|---|---|
-| Single image | Raw data → Segment → Measure → Analysis |
-| Multiple images | Raw data → Channels → Segment → Measure → Analysis |
+2. **Open the app at https://apoptotic-lab.vercel.app** and click **Check dependencies**. When
+   everything is in place it opens the start page; if something is missing it says what to install.
+3. **Choose a flow:**
+
+   | Flow | Steps |
+   |---|---|
+   | Single image | Raw data → Segment → Measure → Analysis |
+   | Multiple images | Raw data → Channels → Segment → Measure → Analysis |
+
+The app runs in the browser, but the analysis runs in the engine on your computer: images never
+leave it. Use Chrome or Edge, and if the browser asks whether the site may access apps or devices
+on your network, choose **Allow**. Without internet, the engine also serves the same app at
+http://127.0.0.1:8010.
 
 ## Outputs
 

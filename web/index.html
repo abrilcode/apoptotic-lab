@@ -7,9 +7,23 @@
 <link rel="icon" href="/static/brand/favicon.png?v=2" type="image/png" sizes="256x256">
 <link rel="apple-touch-icon" href="/static/brand/apple-touch-icon.png?v=2">
 <link rel="preload" href="/static/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/static/app.css?v=14">
+<link rel="stylesheet" href="/static/app.css?v=19">
+<script>
+// Where the engine (the Python server that segments and measures) is. When the engine serves this
+// page itself, API is "" (same address). When the page is hosted (https, e.g. on Vercel), the
+// engine runs on this computer at http://127.0.0.1:8010; ?engine=<url> points elsewhere and is
+// remembered in this browser.
+window.API = (() => {
+  const q = new URLSearchParams(location.search).get("engine");
+  let saved = null;
+  try { if (q) localStorage.setItem("engine", q); saved = localStorage.getItem("engine"); } catch (e) {}
+  if (location.protocol !== "https:" && !q) return "";
+  return (q || saved || "http://127.0.0.1:8010").replace(/\/$/, "");
+})();
+window.HOSTED = window.API !== "";
+</script>
 </head>
-<body>
+<body class="landing">
 
 <header id="topbar">
   <span class="logo" role="link" tabindex="0" aria-label="apoptotic-lab, back to the start" title="Back to the start"><span class="g" style="--x:0;--w:128"></span><span class="g x" style="--x:128;--w:125;--i:0;--j:9"></span><span class="g x" style="--x:253;--w:132.5;--i:1;--j:8"></span><span class="g x" style="--x:385.5;--w:125;--i:2;--j:7"></span><span class="g x" style="--x:510.5;--w:72.5;--i:3;--j:6"></span><span class="g x" style="--x:583;--w:124.5;--i:4;--j:5"></span><span class="g x" style="--x:707.5;--w:76;--i:5;--j:4"></span><span class="g x" style="--x:783.5;--w:43.5;--i:6;--j:3"></span><span class="g x" style="--x:827;--w:126;--i:7;--j:2"></span><span class="caret c1" aria-hidden="true"></span><span class="g" style="--x:953;--w:385"></span></span>
@@ -19,6 +33,7 @@
   <span id="device-chip" class="status hidden"></span>
   <button id="outdir-pick" class="sm" title="Folder where Save to folder writes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4.2l2 2.2h8.8A1.5 1.5 0 0 1 21 9.7v7.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg>Output folder<span id="outdir-name" class="ellip"></span></button>
   <button id="restart" class="sm hidden">New analysis</button>
+  <a id="repo-link" class="btn sm icon-btn" href="https://github.com/abrilcode/apoptotic-lab" target="_blank" rel="noopener" aria-label="Source code on GitHub" title="Source code on GitHub"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></a>
   <button id="theme-toggle" class="sm icon-btn" aria-label="Switch to dark theme" title="Switch to dark theme"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4 8.2 8.2 0 1 0 20 14.6z"/></svg></button>
 </header>
 
@@ -26,8 +41,19 @@
 
 <main id="main" class="no-steps">
 
+  <!-- Landing: install or check the dependencies, then the start page -->
+  <section id="landing">
+    <span class="logo big" id="landing-logo" role="img" aria-label="apoptotic-lab"><span class="g" style="--x:0;--w:128"></span><span class="g x" style="--x:128;--w:125;--i:0;--j:9"></span><span class="g x" style="--x:253;--w:132.5;--i:1;--j:8"></span><span class="g x" style="--x:385.5;--w:125;--i:2;--j:7"></span><span class="g x" style="--x:510.5;--w:72.5;--i:3;--j:6"></span><span class="g x" style="--x:583;--w:124.5;--i:4;--j:5"></span><span class="g x" style="--x:707.5;--w:76;--i:5;--j:4"></span><span class="g x" style="--x:783.5;--w:43.5;--i:6;--j:3"></span><span class="g x" style="--x:827;--w:126;--i:7;--j:2"></span><span class="caret c1" aria-hidden="true"></span><span class="g" style="--x:953;--w:385"></span></span>
+    <p class="landing-sub">Segment &amp; quantify anything</p>
+    <div class="landing-actions">
+      <a class="btn" href="https://github.com/abrilcode/apoptotic-lab#installation" target="_blank" rel="noopener">Install dependencies</a>
+      <button id="check-deps" class="primary">Check dependencies</button>
+    </div>
+    <div id="landing-result" aria-live="polite"></div>
+  </section>
+
   <!-- Start: single image or multiple images -->
-  <section id="choice" class="start">
+  <section id="choice" class="start hidden">
     <div class="hero">
       <h1>New analysis</h1>
       <p class="lead">Segment nuclei, cells or other objects on any channel, measure every channel inside each object, and compare conditions. Images are processed on this computer.</p>
@@ -54,6 +80,16 @@
       <div><span class="k">Segmentation device</span><span class="v" id="env-device">Checking</span></div>
       <div><span class="k">StarDist (optional, nuclei)</span><span class="v" id="env-stardist">Checking</span></div>
       <div><span class="k">Output folder</span><span class="v" id="env-outdir">Not chosen; downloads go to the browser</span></div>
+      <div><span class="k">Dependencies</span><span class="v" id="env-deps">Checking</span></div>
+    </div>
+    <div id="deps-panel" class="hidden" role="status">
+      <div class="deps-head">
+        <div><h3>Some dependencies are missing or out of date</h3>
+          <p class="note">Install them in the engine's environment, then restart the engine and reload this page.</p></div>
+        <a class="btn sm" id="deps-repo" href="https://github.com/abrilcode/apoptotic-lab#installation" target="_blank" rel="noopener">Installation steps on GitHub</a>
+      </div>
+      <table class="deps-table"><thead><tr><th>Package</th><th>Required</th><th>Installed</th></tr></thead><tbody id="deps-rows"></tbody></table>
+      <pre><code id="deps-cmd"></code></pre>
     </div>
   </section>
 
@@ -301,10 +337,136 @@
 </div>
 
 <div id="lightbox"><img alt=""></div>
+
+<div id="engine" class="hidden" role="dialog" aria-modal="true" aria-labelledby="engine-title">
+  <div class="engine-card">
+    <h2 id="engine-title">Start the engine on this computer</h2>
+    <p class="engine-lead">apoptotic-lab runs its analysis on your own computer, so images never leave it.
+      This page could not reach the engine at <code id="engine-url"></code>.</p>
+    <div class="engine-old hidden"><p><b>Your engine is older than this page.</b> Update it, then start it again:</p>
+      <pre><code>cd apoptotic-lab
+git pull
+pip install -r requirements.txt</code></pre></div>
+    <div class="engine-tabs" role="tablist">
+      <button class="sm on" data-os="mac" role="tab">macOS and Linux</button>
+      <button class="sm" data-os="win" role="tab">Windows</button>
+    </div>
+    <div class="engine-os" data-os="mac">
+      <p class="meta">First time (Python 3.10 to 3.12 and Git installed)</p>
+      <pre><code>git clone https://github.com/abrilcode/apoptotic-lab.git
+cd apoptotic-lab
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt</code></pre>
+      <p class="meta">Every time</p>
+      <pre><code>cd apoptotic-lab && source .venv/bin/activate
+uvicorn app:app --host 127.0.0.1 --port 8010</code></pre>
+    </div>
+    <div class="engine-os hidden" data-os="win">
+      <p class="meta">First time, in PowerShell (Python 3.10 to 3.12 and Git installed)</p>
+      <pre><code>git clone https://github.com/abrilcode/apoptotic-lab.git
+cd apoptotic-lab
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt</code></pre>
+      <p class="meta">Every time</p>
+      <pre><code>cd apoptotic-lab; .venv\Scripts\Activate.ps1
+uvicorn app:app --host 127.0.0.1 --port 8010</code></pre>
+    </div>
+    <p class="note">Leave that window open while you work. If the browser asks whether this site may
+      access apps or devices on your network, choose <b>Allow</b>. Details and GPU setup are in the
+      <a href="https://github.com/abrilcode/apoptotic-lab#installation" target="_blank" rel="noopener">README</a>.</p>
+    <div class="engine-foot"><span class="meta" id="engine-status"></span><button id="engine-retry" class="primary">Try again</button></div>
+  </div>
+</div>
 <script src="/static/editor.js?v=10"></script>
 
 <script>
 const $ = s => document.querySelector(s);
+
+// Hosted interface: check that the engine on this computer answers and is recent enough; if not,
+// show how to install and start it. Checked again with "Try again" and every 5 s while shown.
+const ENGINE_VERSION = 2;
+function checkEngine() {
+  return fetch(API + "/api/device").then(r => r.json()).then(d => (d.engine || 0) >= ENGINE_VERSION ? "ok" : "old")
+    .catch(() => "missing");
+}
+function engineScreen(state) {
+  const box = $("#engine");
+  box.classList.toggle("hidden", state === "ok");
+  box.querySelector(".engine-old").classList.toggle("hidden", state !== "old");
+  $("#engine-url").textContent = API;
+  $("#engine-status").textContent = state === "ok" ? "" : (state === "old" ? "Engine found, but out of date" : "Engine not found");
+}
+// Start page: are the packages of requirements.txt installed (and new enough)? If not, list them
+// with the command to install them and a link to the installation steps in the repository.
+fetch(API + "/api/deps").then(r => r.json()).then(d => {
+  const v = $("#env-deps"), bad = d.packages.filter(p => !p.ok);
+  const issues = bad.length + (d.python.ok ? 0 : 1);
+  v.textContent = issues ? `${issues} to fix` : `All ${d.packages.length} installed`;
+  v.classList.toggle("warn", !!issues);
+  if (!d.cellpose_weights && !issues) v.title = "The Cellpose-SAM model (about 1.2 GB) downloads on the first segmentation.";
+  if (!issues) return;
+  if (d.repo) $("#deps-repo").href = d.repo;
+  const rows = bad.map(p => `<tr><td><code>${esc(p.name)}</code></td><td>${esc(p.required || "any")}</td><td>${p.installed ? esc(p.installed) : "not installed"}</td></tr>`);
+  if (!d.python.ok) rows.unshift(`<tr><td><code>python</code></td><td>${esc(d.python.required)}</td><td>${esc(d.python.version)}</td></tr>`);
+  $("#deps-rows").innerHTML = rows.join("");
+  $("#deps-cmd").textContent = bad.length
+    ? "pip install " + bad.map(p => `"${p.name}${p.required}"`).join(" ")
+    : "Create the environment again with Python 3.10 to 3.12 (see the installation steps).";
+  $("#deps-panel").classList.remove("hidden");
+}).catch(() => { const v = $("#env-deps"); if (v) v.textContent = "Could not check"; });
+
+// Landing page: the logo, "Install dependencies" (the installation steps in the repository) and
+// "Check dependencies". The check asks the engine whether it runs and is recent enough
+// (/api/device), then whether every requirement is installed (/api/deps); when everything is in
+// place it continues to the start page. If the engine cannot be reached, the engine screen shows
+// how to install and start it.
+function goStart() {
+  document.body.classList.remove("landing");
+  $("#landing").classList.add("hidden"); $("#choice").classList.remove("hidden");
+  window.scrollTo(0, 0);
+}
+async function runCheck() {
+  const out = $("#landing-result"), btn = $("#check-deps");
+  btn.disabled = true;
+  out.innerHTML = '<p class="meta">Checking the engine and its dependencies</p>';
+  const st = await checkEngine();
+  if (st !== "ok") {
+    btn.disabled = false;
+    out.innerHTML = `<p class="landing-bad">${st === "old" ? "The engine on this computer is out of date." : "The engine is not running on this computer."}</p>`;
+    engineScreen(st); return;
+  }
+  let d;
+  try { d = await (await fetch(API + "/api/deps")).json(); }
+  catch (e) { btn.disabled = false; out.innerHTML = '<p class="landing-bad">Could not check the dependencies.</p>'; return; }
+  const bad = d.packages.filter(p => !p.ok);
+  if (bad.length || !d.python.ok) {
+    btn.disabled = false;
+    const rows = bad.map(p => `<li><code>${esc(p.name)}</code> <span class="meta">${p.installed ? esc(p.installed) + ", needs " + esc(p.required) : "not installed"}</span></li>`);
+    if (!d.python.ok) rows.unshift(`<li><code>python ${esc(d.python.version)}</code> <span class="meta">needs ${esc(d.python.required)}</span></li>`);
+    out.innerHTML = `<p class="landing-bad">${rows.length} to fix</p><ul class="landing-list">${rows.join("")}</ul>`
+      + (bad.length ? `<pre><code>pip install ${bad.map(p => `"${esc(p.name)}${esc(p.required)}"`).join(" ")}</code></pre>` : "")
+      + '<p class="meta">Install them, restart the engine and check again.</p>';
+    return;
+  }
+  out.innerHTML = `<p class="landing-ok">All ${d.packages.length} dependencies installed</p>`;
+  setTimeout(goStart, 900);
+}
+document.addEventListener("click", e => {
+  if (e.target.id === "check-deps") runCheck();
+  if (e.target.id === "engine-retry") { engineScreen("ok"); runCheck(); }
+  const tab = e.target.closest(".engine-tabs [data-os]");
+  if (tab) {
+    document.querySelectorAll(".engine-tabs [data-os]").forEach(b => b.classList.toggle("on", b === tab));
+    document.querySelectorAll(".engine-os").forEach(d => d.classList.toggle("hidden", d.dataset.os !== tab.dataset.os));
+  }
+});
+if (/Win/.test(navigator.platform)) setTimeout(() => document.querySelector('.engine-tabs [data-os="win"]')?.click(), 0);
+// Type the landing logo once, after its lettering has loaded (otherwise the animation can run
+// before the letters are visible).
+{ const img = new Image(), play = () => setTimeout(() => $("#landing-logo")?.classList.add("play"), 500);
+  img.onload = play; img.onerror = play; img.src = "/static/brand/apoptotic-lab.png?v=2"; }
 const ALLOWED = [".czi", ".tif", ".tiff", ".png", ".jpg", ".jpeg"];
 const extOf = n => { const i = n.lastIndexOf("."); return i < 0 ? "" : n.slice(i).toLowerCase(); };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
@@ -427,7 +589,7 @@ function paramsText(rec) { return JSON.stringify(rec, null, 2); }
 // Final label masks (after any manual edits): one TIFF for one image, a ZIP for several.
 async function downloadMasks(items) {
   const fd = new FormData(); fd.append("items", JSON.stringify(items));
-  const resp = await fetch("/api/masks", { method: "POST", body: fd });
+  const resp = await fetch(API + "/api/masks", { method: "POST", body: fd });
   if (!resp.ok) { let msg = "Could not download the masks."; try { msg = (await resp.json()).error || msg; } catch (e) {} alert(msg); return; }
   const blob = await resp.blob();
   const cd = resp.headers.get("Content-Disposition") || "";
@@ -547,7 +709,7 @@ function paletteOpts() {
   });
   return out + (group !== null ? `</optgroup>` : "");
 }
-fetch("/api/palettes").then(r => r.json()).then(d => {
+fetch(API + "/api/palettes").then(r => r.json()).then(d => {
   if (d.palettes && d.palettes.length) PALETTES = d.palettes;
   if (d.default) PALETTE_DEFAULT = d.default;
 }).catch(() => {});
@@ -602,7 +764,7 @@ function renderMeasure(sel, r, filename, maskItems) {
         fd.append("columns", JSON.stringify(r.columns));
         fd.append("sort_by", JSON.stringify([st.by]));
         fd.append("desc", st.desc ? "true" : "false");
-        const rr = await (await fetch("/api/measure_table", { method: "POST", body: fd })).json();
+        const rr = await (await fetch(API + "/api/measure_table", { method: "POST", body: fd })).json();
         if (!rr.error) { st.preview = rr.preview; st.csv = rr.csv; }
         draw();
       };
@@ -624,7 +786,7 @@ function edgeLine(e) {
 // Switch the edge rule for one segmented image; returns the server response (overlay, counts).
 async function setEdgeRule(token, exclude) {
   const fd = new FormData(); fd.append("token", token); fd.append("exclude_edge", exclude ? "true" : "false");
-  return (await fetch("/api/single/edge", { method: "POST", body: fd })).json();
+  return (await fetch(API + "/api/single/edge", { method: "POST", body: fd })).json();
 }
 
 function showEdgeSummary(sel, r) {
@@ -704,7 +866,7 @@ function singlePlotPanel(r) {
     fd.append("palette", $("#single-palette").value);
     fd.append("x", "condition");
     fd.append("log2", $("#single-log2").checked ? "true" : "false");
-    const pr = await (await fetch("/api/batch/plot", { method: "POST", body: fd })).json();
+    const pr = await (await fetch(API + "/api/batch/plot", { method: "POST", body: fd })).json();
     if (pr.error) { $("#single-fig").innerHTML = `<p class="flag">${esc(pr.error)}</p>`; $("#single-dl").innerHTML = ""; return; }
     $("#single-fig").innerHTML = `<img class="cmpimg" src="${pr.figure}" alt="">`;
     $("#single-dl").innerHTML = `<a class="btn sm" download="distributions.png" href="${pr.figure}">Download plot</a> <button class="savefig sm">Save to folder</button>`;
@@ -772,7 +934,7 @@ $("#go").addEventListener("click", async () => {
   $("#busy").classList.remove("hidden");
   $("#upmsg").innerHTML = "";
   try {
-    const data = await (await fetch("/api/single/inspect", { method: "POST", body: fd })).json();
+    const data = await (await fetch(API + "/api/single/inspect", { method: "POST", body: fd })).json();
     handle(data, skipped);
   } catch (e) {
     $("#upmsg").innerHTML = `<p class="rejected">Request failed: ${esc(e)}</p>`;
@@ -886,7 +1048,7 @@ function buildControls(f, rejected, skipped) {
     fd.append("subtract_bg", $("#bg-sub-single").checked ? "true" : "false");
     fd.append("pixel_size_um", $("#px-single").disabled ? "" : $("#px-single").value.trim());
     fd.append("exclude_edge", $("#edge-single").checked ? "true" : "false");
-    const r = await (await fetch("/api/single/measure", { method: "POST", body: fd })).json();
+    const r = await (await fetch(API + "/api/single/measure", { method: "POST", body: fd })).json();
     if (r.error) { $("#measure-out").innerHTML = `<p class="flag">${esc(r.error)}</p>`; return; }
     $("#measure-meta").textContent = r.channels ? `${r.channels.length} channels` : "";
     renderMeasure("#measure-out", r, "measurements.csv", [{ token: SINGLE_TOKEN, image: SINGLE_NAME }]);
@@ -935,7 +1097,7 @@ function buildControls(f, rejected, skipped) {
     fd.append("engine", engine);
     fd.append("exclude_edge", $("#edge-single").checked ? "true" : "false");
     try {
-      const r = await (await fetch("/api/single/segment", { method: "POST", body: fd })).json();
+      const r = await (await fetch(API + "/api/single/segment", { method: "POST", body: fd })).json();
       clearInterval(timer);
       if (r.error) { $("#msgs").innerHTML = `<div class="flag">${esc(r.error)}</div>`; return; }
       const secs = fmtSecs((performance.now() - t0) / 1000);
@@ -1101,7 +1263,7 @@ async function addImages() {
   for (const f of allowed) fd.append("files", f, f.name);
   $("#maddbusy").classList.remove("hidden");
   try {
-    const data = await (await fetch("/api/batch/inspect", { method: "POST", body: fd })).json();
+    const data = await (await fetch(API + "/api/batch/inspect", { method: "POST", body: fd })).json();
     if (data.blocked) { $("#maddmsg").innerHTML = `<p class="rejected">${esc(data.error)}</p>`; return; }
     const newFields = data.fields || [];
     newFields.forEach(f => f.__token = data.token || null);
@@ -1147,7 +1309,7 @@ function openInspector(idx) {
   $("#insp-img").src = f.thumbnail || "";
 
   const fd = new FormData(); fd.append("token", f.__token || ""); fd.append("key", f.key);
-  fetch("/api/batch/preview", { method: "POST", body: fd })
+  fetch(API + "/api/batch/preview", { method: "POST", body: fd })
     .then(r => r.json())
     .then(d => {
       if (!$("#inspector").classList.contains("show")) return;
@@ -1199,7 +1361,7 @@ function cxOpen(idx) {
   $("#cx-views").innerHTML = loadingHTML("Loading channels");
   $("#cx-img").src = f.thumbnail || "";
   const fd = new FormData(); fd.append("token", f.__token || ""); fd.append("key", f.key);
-  fetch("/api/batch/preview", { method: "POST", body: fd })
+  fetch(API + "/api/batch/preview", { method: "POST", body: fd })
     .then(r => r.json())
     .then(d => {
       if (!$("#cx-views")) return;
@@ -1237,7 +1399,7 @@ $("#mgo").addEventListener("click", async () => {
   $("#mbusy").classList.remove("hidden");
   $("#mupmsg").innerHTML = "";
   try {
-    const data = await (await fetch("/api/batch/inspect", { method: "POST", body: fd })).json();
+    const data = await (await fetch(API + "/api/batch/inspect", { method: "POST", body: fd })).json();
     renderBatch(data, skipped);
   } catch (e) {
     $("#mupmsg").innerHTML = `<p class="rejected">Request failed: ${esc(e)}</p>`;
@@ -1538,7 +1700,7 @@ async function segmentAllBatch() {
       fd.append("channel", SEG_CHANNEL); fd.append("type", segType); fd.append("diameter", "");
       fd.append("engine", SEG_ENGINE);
       fd.append("exclude_edge", EDGE_EXCLUDE ? "true" : "false");
-      const r = await (await fetch("/api/batch/segment_one", { method: "POST", body: fd })).json();
+      const r = await (await fetch(API + "/api/batch/segment_one", { method: "POST", body: fd })).json();
       if (r.error) { clearInterval(timer); segBar(done, N, false); $("#segprogress").innerHTML = `<span class="flag">${esc(f.key)}: ${esc(r.error)}</span>`; btn.disabled = false; return; }
       BSEG.push({ key: f.key, token: r.token, count: r.count, overlay: r.overlay, edge: r.edge,
                   condition: f.condition, replicate: f.replicate, control: f.control,
@@ -1644,7 +1806,7 @@ function renderMeasurePanel() {
     fd.append("exclude_edge", EDGE_EXCLUDE ? "true" : "false");
     fd.append("measurements", JSON.stringify(MEAS_SEL));
     fd.append("channel_names", JSON.stringify(CHANNEL_LABELS || []));
-    const r = await (await fetch("/api/batch/measure", { method: "POST", body: fd })).json();
+    const r = await (await fetch(API + "/api/batch/measure", { method: "POST", body: fd })).json();
     if (r.error) { $("#measure-out-batch").innerHTML = `<p class="flag">${esc(r.error)}</p>`; return; }
     RESULT_TOKEN = r.result_token || null;
     renderMeasure("#measure-out-batch", r, "measurements.csv", BSEG.map(s => ({ token: s.token, image: s.key })));
@@ -1766,7 +1928,7 @@ function buildCompareUI(channels, conditions, metrics) {
     fd.append("conditions", JSON.stringify(conds()));
     fd.append("markers", JSON.stringify(mks()));
     fd.append("focus_condition", $("#cmp-focus") ? $("#cmp-focus").value : "");
-    const r = await (await fetch("/api/batch/plot", { method: "POST", body: fd })).json();
+    const r = await (await fetch(API + "/api/batch/plot", { method: "POST", body: fd })).json();
     if (r.error) { $("#cmp-fig").innerHTML = `<p class="flag">${esc(r.error)}</p>`; $("#cmp-dl").innerHTML = ""; return; }
     $("#cmp-fig").innerHTML = `<img class="cmpimg" src="${r.figure}" alt="">`;
     $("#cmp-dl").innerHTML = `<a class="btn sm" download="comparison.png" href="${r.figure}">Download plot</a> <button class="savefig sm">Save to folder</button>`;
@@ -1800,7 +1962,7 @@ function buildCompareUI(channels, conditions, metrics) {
     fd.append("x_thr", $("#sc-xthr").value);
     fd.append("y_thr", $("#sc-ythr").value);
     fd.append("palette", $("#cmp-palette") ? $("#cmp-palette").value : "fresh");
-    const r = await (await fetch("/api/batch/scatter", { method: "POST", body: fd })).json();
+    const r = await (await fetch(API + "/api/batch/scatter", { method: "POST", body: fd })).json();
     if (r.error) { $("#sc-fig").innerHTML = `<p class="flag">${esc(r.error)}</p>`; $("#sc-dl").innerHTML = ""; return; }
     $("#sc-fig").innerHTML = `<img class="cmpimg" src="${r.figure}" alt="">`;
     $("#sc-dl").innerHTML = `<a class="btn sm" download="scatter.png" href="${r.figure}">Download plot</a> <button class="savefig sm">Save to folder</button>`;
@@ -1840,7 +2002,7 @@ function buildCompareUI(channels, conditions, metrics) {
     fd.append("absolute", $("#pos-abs").value);
     fd.append("palette", $("#cmp-palette") ? $("#cmp-palette").value : "vivid");
     if (!allMarkers) fd.append("channel", $("#pos-ch").value);
-    const url = allMarkers ? "/api/batch/positivity_all" : "/api/batch/positivity";
+    const url = API + (allMarkers ? "/api/batch/positivity_all" : "/api/batch/positivity");
     const r = await (await fetch(url, { method: "POST", body: fd })).json();
     if (r.error) { $("#pos-out").innerHTML = `<p class="flag">${esc(r.error)}</p>`; return; }
 
@@ -1907,14 +2069,14 @@ function buildCompareUI(channels, conditions, metrics) {
 }
 
 // load the Set Measurements options once
-fetch("/api/measurements").then(r => r.json()).then(d => {
+fetch(API + "/api/measurements").then(r => r.json()).then(d => {
   MEAS_OPTIONS = d.measurements || [];
   if (BSEG.length && !document.querySelector("#meas-set .measopt")) renderMeasurePanel();
   const ms = $("#meas-set-single"); if (ms && FIELD && !ms.querySelector(".measopt")) ms.innerHTML = measChecklist();
 }).catch(() => {});
 
 // Cellpose speed depends on GPU vs CPU. Shown once, in the header.
-fetch("/api/device").then(r => r.json()).then(d => {
+fetch(API + "/api/device").then(r => r.json()).then(d => {
   GPU_OK = !!d.gpu;
   const chip = $("#device-chip");
   chip.classList.remove("hidden");
@@ -1962,7 +2124,7 @@ const Viewer = (() => {
     $("#vw-channels").innerHTML = loadingHTML("Loading channels");
     const fd = new FormData(); fd.append("token", TOKEN);
     let d = {};
-    try { d = await (await fetch("/api/field_hist", { method: "POST", body: fd })).json(); } catch (e) { }
+    try { d = await (await fetch(API + "/api/field_hist", { method: "POST", body: fd })).json(); } catch (e) { }
     HISTS = d.hists || [];
     NAMES = HISTS.map((h, i) => (LABELS && LABELS[i]) || h.name);
     COLORS = HISTS.map((h, i) => natColor(h.name) || natColor(NAMES[i]) || PALETTE[i % PALETTE.length]);
@@ -2033,7 +2195,7 @@ const Viewer = (() => {
     $("#vw-img").style.opacity = .55;
     const fd = new FormData(); fd.append("token", TOKEN);
     fd.append("spec", JSON.stringify({ colors: COLORS.map(hexRgb), visible: VIS, ranges: RANGES, seg }));
-    const r = await (await fetch("/api/render", { method: "POST", body: fd })).json();
+    const r = await (await fetch(API + "/api/render", { method: "POST", body: fd })).json();
     $("#vw-img").style.opacity = 1;
     if (r.error) { $("#vw-img").removeAttribute("src"); return; }
     $("#vw-img").src = r.image;
