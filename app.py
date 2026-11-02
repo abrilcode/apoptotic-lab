@@ -1,9 +1,7 @@
 """
-CelloType backend API + web UI.
-
-Endpoints:
-  POST /api/upload   multiple files -> organized dataset (fields + rejected)
-  GET  /             minimal upload page
+apoptotic-lab backend: FastAPI endpoints for the Single image and Multiple images flows (inspect,
+segment, edit masks, measure, plots, positivity, display rendering, mask export). GET / serves
+the interface in web/.
 
 Run:
   .venv/bin/uvicorn app:app --host 127.0.0.1 --port 8010
@@ -34,8 +32,35 @@ from organize import organize
 from single import inspect_single, field_channels, field_calibration
 
 
+def _channel_names(raw: str):
+    """Channel names typed in the interface: a JSON list by channel index ("" keeps the name read
+    from the file). Returns (names or None, error response or None)."""
+    if not (raw or "").strip():
+        return None, None
+    try:
+        names = json.loads(raw)
+        if not isinstance(names, list):
+            raise ValueError
+    except Exception:
+        return None, JSONResponse({"error": "The channel names could not be read."}, status_code=400)
+    return [("" if n is None else str(n).strip()) for n in names], None
+
+
+def _rename_channels(channels, names):
+    """Apply the typed names to the (name, array) channels of one image, so tables, plots and the
+    record use them. Returns (channels, per-channel record, error message or None)."""
+    used = [(names[i] if names and i < len(names) and names[i] else n) for i, (n, _a) in enumerate(channels)]
+    if names:
+        dup = sorted({u for u in used if used.count(u) > 1})
+        if dup:
+            return None, None, f"Two channels have the same name ({', '.join(dup)}). Each channel needs its own name."
+    rec = [{"index": i, "name_in_file": n, "name_used": u} for i, ((n, _a), u) in enumerate(zip(channels, used))]
+    return [(u, a) for u, (_n, a) in zip(used, channels)], rec, None
+
+
 def _measure_items(entries, subtract_bg=False, measurements=None, bg_method="object", bg_infos=None,
-                   exclude_edge=None, edge_infos=None, processed=None, manual_px=None, cal_infos=None):
+                   exclude_edge=None, edge_infos=None, processed=None, manual_px=None, cal_infos=None,
+                   channel_names=None):
     """Measure a list of {token, image, condition, replicate} into tidy rows (one row
     per segmented object per channel). measurements selects the set (None -> basics).
     The background (when subtract_bg) is estimated per image and channel; if bg_infos is
@@ -43,13 +68,16 @@ def _measure_items(entries, subtract_bg=False, measurements=None, bg_method="obj
     Objects touching the image border are dropped when exclude_edge is True (None = use each
     image's own setting); they still count as objects for the background estimate.
     The pixel size comes from each image's metadata, else from manual_px (see _calibration);
-    if cal_infos is a list, one {image, x, y, source} entry per image is appended."""
+    if cal_infos is a list, one {image, x, y, source} entry per image is appended.
+    channel_names (list by channel index) renames the channels; a clash raises ValueError."""
     allrows = []
     for it in entries:
         session = _SINGLE_SESSIONS.get(it.get("token"))
         if not session or session.get("masks") is None:
             continue
-        channels = field_channels(session["paths"])
+        channels, ch_rec, msg = _rename_channels(field_channels(session["paths"]), channel_names)
+        if msg:
+            raise ValueError(msg)
         info = {}
         cal = _calibration(session, manual_px)
         rows = measure.measure_field(session["masks"], channels,
@@ -64,7 +92,7 @@ def _measure_items(entries, subtract_bg=False, measurements=None, bg_method="obj
         if edge_infos is not None:
             edge_infos.append(e_info)
         if processed is not None:
-            processed.append((it, session, info or None, e_info, cal))
+            processed.append((it, session, info or None, e_info, cal, ch_rec))
         if exc:
             rows = [r for r in rows if not r.get("at_edge")]
         for r in rows:
@@ -159,20 +187,22 @@ def _cal_warnings(cals, manual_px=None, columns=None):
                        "so no pixel size was used for it.")
     if none:
         names = ", ".join(none[:5]) + (f" and {len(none) - 5} more" if len(none) > 5 else "")
+        its = "its" if len(none) == 1 else "their"
         out.append(f"No pixel size for {len(none)} of {n} image{'s' if n != 1 else ''} ({names}): "
-                   "their µm columns are empty. Enter the pixel size (µm per pixel) to fill them.")
+                   f"{its} µm columns are empty. Enter the pixel size (µm per pixel) to fill them.")
     sizes = sorted({c["x"] for c in cals if c["x"]})
     if len(sizes) > 1 and sizes[-1] - sizes[0] > measure.SQUARE_TOL * sizes[-1]:
         out.append("The images have different pixel sizes (" + ", ".join(f"{v:g} µm" for v in sizes) +
                    "): compare sizes in µm, not in pixels.")
     for c in cals:
         if c["x"] and not measure.pixels_square((c["x"], c["y"])):
-            out.append(f"{c['image']} has non-square pixels ({c['x']:g} x {c['y']:g} µm): only area_um2 is "
+            out.append(f"{c['image']} has non-square pixels ({c['x']:g} × {c['y']:g} µm): only area_um2 is "
                        "given in µm; lengths stay in pixels.")
     kept = [c for c in cals if c.get("manual_not_used")]
     if kept:
+        in_file = ", ".join(f"{v:g} µm" for v in sorted({k["x"] for k in kept}))
         out.append(f"{len(kept)} image{'s have' if len(kept) != 1 else ' has'} a pixel size in the file "
-                   f"({kept[0]['x']:g} µm), used instead of the value entered ({manual_px:g} µm).")
+                   f"({in_file}), used instead of the value entered ({manual_px:g} µm).")
     return out
 
 
@@ -207,7 +237,7 @@ def _segment(arr, engine: str, seg_type: str, diameter, info: dict):
         return None, None, JSONResponse({"error": f"Unknown segmentation model '{engine}'."}, status_code=400)
     if engine == "stardist":
         if seg_type != "nuclei":
-            return None, None, JSONResponse({"error": "StarDist segments nuclei only. Use Cellpose-SAM for cells and other objects."},
+            return None, None, JSONResponse({"error": "StarDist segments nuclei only. Use Cellpose-SAM for cells or other objects."},
                                             status_code=400)
         if not segment.stardist_available():
             return None, None, JSONResponse({"error": "StarDist is not installed (pip install stardist tensorflow)."},
@@ -255,7 +285,8 @@ def _rows_csv(rows, columns) -> str:
 
 # token -> {field_key: [full file paths]} so a large preview can be built on demand
 _BATCH_SESSIONS: dict = {}
-# token -> {"paths": [...], "masks": <label array or None>} for the single-image flow
+# token -> one segmentation session (paths, masks, flows, channel, object type, border rule and the
+# run-record data), for the single image and for each segmented field of the multiple-image flow
 _SINGLE_SESSIONS: dict = {}
 # result_token -> measured rows, so plotting/positivity reuse them without re-measuring
 # (this is what makes the live plot preview fast and independent of segmentation sessions)
@@ -322,7 +353,7 @@ async def single_commit(token: str = Form(...), idmap: str = Form(...)):
     """Store the user-edited label map and return a fresh overlay + count."""
     session = _SINGLE_SESSIONS.get(token)
     if not session:
-        return JSONResponse({"error": "This session expired. Upload the image again."}, status_code=410)
+        return JSONResponse({"error": "This session expired. Load the image again."}, status_code=410)
     masks = segment.decode_idmap_dataurl(idmap)
     session["masks"] = masks
     _note_edit(session, "web_editor")
@@ -341,10 +372,14 @@ async def single_commit(token: str = Form(...), idmap: str = Form(...)):
 @app.post("/api/single/measure")
 async def single_measure(token: str = Form(...), subtract_bg: str = Form("false"),
                          measurements: str = Form(""), bg_method: str = Form("object"),
-                         exclude_edge: str = Form(""), pixel_size_um: str = Form("")):
+                         exclude_edge: str = Form(""), pixel_size_um: str = Form(""),
+                         channel_names: str = Form("")):
     session = _SINGLE_SESSIONS.get(token)
     if not session or session.get("masks") is None:
         return JSONResponse({"error": "Segment first, then measure."}, status_code=410)
+    names, err = _channel_names(channel_names)
+    if err:
+        return err
     bg_on, bg_method, err = _bg_params(subtract_bg, bg_method)
     if err:
         return err
@@ -352,7 +387,9 @@ async def single_measure(token: str = Form(...), subtract_bg: str = Form("false"
     if err:
         return err
     sel = json.loads(measurements) if measurements.strip() else None
-    channels = field_channels(session["paths"])
+    channels, ch_rec, msg = _rename_channels(field_channels(session["paths"]), names)
+    if msg:
+        return JSONResponse({"error": msg}, status_code=400)
     info = {}
     cal = _calibration(session, manual_px)
     rows = measure.measure_field(session["masks"], channels, subtract_bg=bg_on, measurements=sel,
@@ -373,7 +410,7 @@ async def single_measure(token: str = Form(...), subtract_bg: str = Form("false"
     cols = ["image", "object_id", "channel", "at_edge"] + measure.columns_for(sel, background=bg_on)
     rtok = uuid.uuid4().hex
     fields = [runlog.field_record(image, session, background=(bg_infos[0] if bg_infos else None),
-                                  edge=edge_infos[0], calibration=cal)]
+                                  edge=edge_infos[0], calibration=cal, channel_names=ch_rec)]
     record = runlog.build_record("single", fields, sel or measure.DEFAULT_MEASUREMENTS, cols, bg_on, bg_method,
                                  len(rows), session.get("seg_info") or {}, "measurements.csv",
                                  manual_pixel_size_um=manual_px)
@@ -398,29 +435,37 @@ async def single_measure(token: str = Form(...), subtract_bg: str = Form("false"
 @app.post("/api/batch/measure")
 async def batch_measure(items: str = Form(...), subtract_bg: str = Form("false"),
                         measurements: str = Form(""), bg_method: str = Form("object"),
-                        exclude_edge: str = Form(""), pixel_size_um: str = Form("")):
-    # items = JSON list of {token, image, condition, replicate}
+                        exclude_edge: str = Form(""), pixel_size_um: str = Form(""),
+                        channel_names: str = Form("")):
+    # items = JSON list of {token, image, condition, replicate}; channel_names = JSON list by channel index
     bg_on, bg_method, err = _bg_params(subtract_bg, bg_method)
     if err:
         return err
     manual_px, err = _pixel_size_param(pixel_size_um)
     if err:
         return err
+    names, err = _channel_names(channel_names)
+    if err:
+        return err
     sel = json.loads(measurements) if measurements.strip() else None
     bg_infos, edge_infos, processed, cal_infos = [], [], [], []
     exc = _flag(exclude_edge) if exclude_edge.strip() else None
-    allrows = _measure_items(json.loads(items), subtract_bg=bg_on, measurements=sel, bg_method=bg_method,
-                             bg_infos=bg_infos, exclude_edge=exc, edge_infos=edge_infos, processed=processed,
-                             manual_px=manual_px, cal_infos=cal_infos)
+    try:
+        allrows = _measure_items(json.loads(items), subtract_bg=bg_on, measurements=sel, bg_method=bg_method,
+                                 bg_infos=bg_infos, exclude_edge=exc, edge_infos=edge_infos, processed=processed,
+                                 manual_px=manual_px, cal_infos=cal_infos, channel_names=names)
+    except ValueError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
     if not allrows:
-        return JSONResponse({"error": "No measurements. Segment the images first, then Measure (the session may have expired)."}, status_code=400)
+        return JSONResponse({"error": "No measurements. Segment the images, then measure them (the session may have expired)."}, status_code=400)
     chans = list(dict.fromkeys(r["channel"] for r in allrows))
     conds = list(dict.fromkeys(r["condition"] for r in allrows))
     cols = ["image", "condition", "technical_replicate", "object_id", "channel", "at_edge"] + measure.columns_for(sel, background=bg_on)
     rtok = uuid.uuid4().hex
     fields = [runlog.field_record(it.get("image", ""), ses, condition=(it.get("condition") or None),
-                                  technical_replicate=it.get("replicate"), background=bgi, edge=edi, calibration=cal)
-              for it, ses, bgi, edi, cal in processed]
+                                  technical_replicate=it.get("replicate"), background=bgi, edge=edi, calibration=cal,
+                                  channel_names=chn)
+              for it, ses, bgi, edi, cal, chn in processed]
     record = runlog.build_record("batch", fields, sel or measure.DEFAULT_MEASUREMENTS, cols, bg_on, bg_method,
                                  len(allrows), (processed[0][1].get("seg_info") or {}) if processed else {},
                                  "measurements.csv", manual_pixel_size_um=manual_px)
@@ -449,7 +494,7 @@ async def batch_plot(result_token: str = Form(...), value: str = Form("mean_inte
                      palette: str = Form("vivid")):
     rows = _MEASURE_RESULTS.get(result_token)
     if rows is None:
-        return JSONResponse({"error": "Measurements expired. Run Measure again."}, status_code=410)
+        return JSONResponse({"error": "These measurements expired. Measure again."}, status_code=410)
     try:
         conds = json.loads(conditions) if conditions.strip() else None
         mks = json.loads(markers) if markers.strip() else None
@@ -469,7 +514,7 @@ async def batch_scatter(result_token: str = Form(...), x_channel: str = Form(...
                         palette: str = Form("vivid")):
     rows = _MEASURE_RESULTS.get(result_token)
     if rows is None:
-        return JSONResponse({"error": "Measurements expired. Run Measure again."}, status_code=410)
+        return JSONResponse({"error": "These measurements expired. Measure again."}, status_code=410)
     try:
         conds = json.loads(conditions) if conditions.strip() else None
         fig = analysis.scatter_figure(
@@ -488,10 +533,10 @@ async def batch_positivity(result_token: str = Form(...), channel: str = Form(..
                            absolute: str = Form(""), palette: str = Form("vivid")):
     rows = _MEASURE_RESULTS.get(result_token)
     if rows is None:
-        return JSONResponse({"error": "Measurements expired. Run Measure again."}, status_code=410)
+        return JSONResponse({"error": "These measurements expired. Measure again."}, status_code=410)
     value = "mean_intensity"   # positivity classifies on mean intensity
     if not any(value in r for r in rows[:1]):
-        return JSONResponse({"error": "Include 'Mean gray value' in Set Measurements to compute positivity."}, status_code=400)
+        return JSONResponse({"error": "Select Mean gray value in Set measurements to compute positivity."}, status_code=400)
     try:
         res = analysis.positivity(
             rows, channel, control=control or None, rule=rule,
@@ -528,10 +573,10 @@ async def batch_positivity_all(result_token: str = Form(...), control: str = For
     be compared side by side. Also returns one per-cell row with a column per marker."""
     rows = _MEASURE_RESULTS.get(result_token)
     if rows is None:
-        return JSONResponse({"error": "Measurements expired. Run Measure again."}, status_code=410)
+        return JSONResponse({"error": "These measurements expired. Measure again."}, status_code=410)
     value = "mean_intensity"
     if not any(value in r for r in rows[:1]):
-        return JSONResponse({"error": "Include 'Mean gray value' in Set Measurements to compute positivity."}, status_code=400)
+        return JSONResponse({"error": "Select Mean gray value in Set measurements to compute positivity."}, status_code=400)
     try:
         res = analysis.positivity_all(
             rows, control=control or None, rule=rule,
@@ -587,7 +632,7 @@ async def measure_table(result_token: str = Form(...), columns: str = Form(...),
     """Re-sort the cached measurement rows by a column; returns sorted preview + CSV."""
     rows = _MEASURE_RESULTS.get(result_token)
     if rows is None:
-        return JSONResponse({"error": "Measurements expired. Run Measure again."}, status_code=410)
+        return JSONResponse({"error": "These measurements expired. Measure again."}, status_code=410)
     cols = json.loads(columns)
     order = json.loads(sort_by) if sort_by.strip() else []
 
@@ -618,7 +663,7 @@ async def render_view(token: str = Form(...), spec: str = Form("{}")):
     a batch field), since both are single-session tokens."""
     session = _SINGLE_SESSIONS.get(token)
     if not session:
-        return JSONResponse({"error": "Session expired. Segment again."}, status_code=410)
+        return JSONResponse({"error": "This session expired. Load the image again."}, status_code=410)
     channels = field_channels(session["paths"])
     n = len(channels)
     s = json.loads(spec) if spec.strip() else {}
@@ -646,18 +691,20 @@ async def field_hist(token: str = Form(...)):
     viewer's brightness/contrast controls)."""
     session = _SINGLE_SESSIONS.get(token)
     if not session:
-        return JSONResponse({"error": "Session expired. Segment again."}, status_code=410)
+        return JSONResponse({"error": "This session expired. Load the image again."}, status_code=410)
     channels = field_channels(session["paths"])
     return JSONResponse({"hists": render.channel_hists(channels)})
 
 
 @app.get("/api/config")
 def config():
-    # local: full features incl. Cellpose-GUI handoff; deploy: hide handoff, use basic web editor
+    # Not called by the current interface (kept with the Cellpose GUI hand-off below).
     mode = "deploy" if os.environ.get("PFCV2_DEPLOY") else "local"
     return JSONResponse({"mode": mode})
 
 
+# Cellpose GUI hand-off (export, launch, reload, import): kept from an earlier version. The current
+# interface does not call these endpoints; masks are edited in the web editor (web/editor.js).
 EDIT_DIR = os.environ.get("PFCV2_EDIT_DIR") or os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "cellpose_edits")
 
@@ -731,7 +778,7 @@ async def reload_cellpose(token: str = Form(...)):
 async def import_cellpose(token: str = Form(...), file: UploadFile = File(...)):
     session = _SINGLE_SESSIONS.get(token)
     if not session:
-        return JSONResponse({"error": "This session expired. Upload the image again."}, status_code=410)
+        return JSONResponse({"error": "This session expired. Load the image again."}, status_code=410)
     data = await file.read()
     try:
         masks = segment.read_imported_masks(file.filename, data)
@@ -762,7 +809,7 @@ def _attachment(name: str) -> str:
 @app.post("/api/masks")
 async def download_masks(items: str = Form(...)):
     """Final label masks (after any manual edits), one 16-bit label TIFF per image
-    (32-bit if an image has more than 65535 labels): 0 = background, each object keeps the
+    (32-bit if a label number exceeds 65535): 0 = background, each object keeps the
     number used in the measurement table. One image -> the TIFF; several -> a ZIP."""
     import tifffile, zipfile
     entries = json.loads(items)
@@ -811,16 +858,16 @@ async def batch_segment_one(token: str = Form(...), key: str = Form(...),
                             channel: int = Form(...), type: str = Form("nuclei"),
                             diameter: str = Form(""), exclude_edge: str = Form("true"),
                             engine: str = Form("cellpose")):
-    """Segment ONE batch field on the chosen channel (any channel; nuclei OR other objects).
+    """Segment ONE batch field on the chosen channel (any channel; nuclei, or cells or other objects).
     Called once per image. `type` is 'nuclei' or 'cells' (cells or any other object); engine 'cellpose' (default) or 'stardist'
     (nuclei only)."""
     mapping = _BATCH_SESSIONS.get(token)
     if not mapping or key not in mapping:
-        return JSONResponse({"error": "Batch session expired. Upload again."}, status_code=410)
+        return JSONResponse({"error": "This session expired. Load the images again."}, status_code=410)
     sources = []
     channels = field_channels(mapping[key], sources=sources)
     if channel < 0 or channel >= len(channels):
-        return JSONResponse({"error": f"Channel {channel + 1} not present in {key}."}, status_code=400)
+        return JSONResponse({"error": f"Channel {channel + 1} is not in {key}."}, status_code=400)
     arr = channels[channel][1]
     diam = float(diameter) if diameter.strip() else None
     info = {}
@@ -854,11 +901,11 @@ async def single_segment(
 ):
     session = _SINGLE_SESSIONS.get(token)
     if not session:
-        return JSONResponse({"error": "This session expired. Upload the image again."}, status_code=410)
+        return JSONResponse({"error": "This session expired. Load the image again."}, status_code=410)
 
     channels = field_channels(session["paths"])
     if channel < 0 or channel >= len(channels):
-        return JSONResponse({"error": "Invalid channel."}, status_code=400)
+        return JSONResponse({"error": "This channel is not in the image."}, status_code=400)
 
     arr = channels[channel][1]
     diam = float(diameter) if diameter.strip() else None
@@ -895,15 +942,14 @@ async def batch_inspect(files: List[UploadFile] = File(...)):
     paths = await _save(files)
 
     # Block mixing quantitative (CZI/TIFF) with display images (PNG/JPEG) in one set:
-    # comparing 16-bit real intensities against 8-bit adjusted ones is not valid.
+    # comparing native-bit-depth intensities against display-adjusted 8-bit ones is not valid.
     exts = {os.path.splitext(p)[1].lower() for p in paths}
     if (exts & _QUANT_EXTS) and (exts & _DISPLAY_EXTS):
         return JSONResponse({
             "fields": [], "conditions": [], "rejected": [], "blocked": True,
             "error": (
-                "This upload mixes quantitative images (CZI/TIFF) with display images "
-                "(PNG/JPEG). For a valid intensity comparison, upload one consistent set. "
-                "Remove one group and try again."
+                "These files mix quantitative images (CZI, TIFF) with display images "
+                "(PNG, JPEG), whose intensities cannot be compared. Load one consistent set."
             ),
         })
 
@@ -925,7 +971,7 @@ async def batch_preview(token: str = Form(...), key: str = Form(...)):
     """Return one field's full breakdown on demand (composite + each channel preview + names)."""
     mapping = _BATCH_SESSIONS.get(token)
     if not mapping or key not in mapping:
-        return JSONResponse({"error": "This upload session expired. Upload again."}, status_code=410)
+        return JSONResponse({"error": "This session expired. Load the images again."}, status_code=410)
     r = inspect_single(mapping[key], with_preview=True)   # composite ~1200 px + channel previews ~1000 px
     field = r.get("field")
     if not field:
