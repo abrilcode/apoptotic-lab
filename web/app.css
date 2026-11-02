@@ -108,12 +108,14 @@ code {
 }
 /* Logo: the designer's "apoptotic-lab." lettering (Monument Grotesk Regular) as one alpha sprite
    in brand/apoptotic-lab.png, 1380 x 218 source units. Each glyph is a slice of that sprite used as
-   a mask, so it takes the text colour in both themes. At rest only "a" and "-lab" show; on hover
-   the letters of "poptotic" open one after another and the full stop lands last. */
+   a mask, so it takes the text colour in both themes. At rest only "a" and "-lab" show. On hover
+   it types like a terminal: a caret appears after "a" and "poptotic" is typed in one letter per
+   step, pushing "-lab" right; then the full stop lands and the caret blinks after it. On leave the
+   letters are deleted in reverse, like backspacing. */
 .logo {
   --lh: 24px; --u: calc(var(--lh) / 218);
-  --ease: cubic-bezier(.22, 1, .36, 1);
-  display: inline-flex; flex: none; height: var(--lh); color: var(--fg); cursor: default;
+  --step: 65ms; --lead: 90ms;
+  position: relative; display: inline-flex; flex: none; height: var(--lh); color: var(--fg); cursor: default;
 }
 .logo .g {
   display: block; flex: none; height: 100%; width: calc(var(--w) * var(--u));
@@ -124,15 +126,25 @@ code {
   -webkit-mask-position: calc(var(--x) * var(--u) * -1) 0; mask-position: calc(var(--x) * var(--u) * -1) 0;
 }
 .logo .x {
-  width: 0; opacity: 0; transform: translateY(35%); filter: blur(3px);
-  transition: width .38s var(--ease), opacity .22s linear, transform .32s var(--ease), filter .28s linear;
-  transition-delay: calc(var(--j) * 14ms);
+  width: 0;
+  transition: width 0s linear calc(var(--j) * 28ms);
 }
 .logo:hover .x {
-  width: calc(var(--w) * var(--u)); opacity: 1; transform: none; filter: none;
-  transition: width .52s var(--ease), opacity .4s linear, transform .55s var(--ease), filter .45s linear;
-  transition-delay: calc(var(--i) * 32ms), calc(var(--i) * 32ms + 70ms), calc(var(--i) * 32ms + 40ms), calc(var(--i) * 32ms + 40ms);
+  width: calc(var(--w) * var(--u));
+  transition-delay: calc(var(--lead) + var(--i) * var(--step));
 }
+/* Caret: a zero-width anchor in the flow, so typed letters push it right; the bar is drawn by
+   ::after and spans ascender to baseline (source rows 8 to 166). c1 rides the typing, c2 blinks
+   after the full stop. */
+.logo .caret { position: relative; flex: none; width: 0; opacity: 0; }
+.logo .caret::after {
+  content: ""; position: absolute; left: calc(9 * var(--u) - .75px); top: calc(8 * var(--u));
+  width: 1.5px; height: calc(158 * var(--u)); background: currentColor;
+}
+.logo:hover .c1 { animation: logo-caret-type calc(var(--lead) + 8 * var(--step)) steps(1) forwards; }
+.logo:hover .c2 { animation: logo-caret-blink 1.06s step-end calc(var(--lead) + 9 * var(--step)) infinite; }
+@keyframes logo-caret-type { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes logo-caret-blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
 .crumb-sep { color: var(--border-3); font-size: 18px; font-weight: 300; margin: 0 2px; }
 .crumb { font-size: 14px; color: var(--fg-2); white-space: nowrap; }
 #topbar:has(.crumb:empty) .crumb-sep { display: none; }
