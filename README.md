@@ -53,16 +53,14 @@
 
 ## Features
 
-- **Input** — CZI, TIFF, PNG and JPEG at native bit depth. Channel names and pixel size from the
-  metadata or the file names.
-- **Segmentation** — Cellpose-SAM for nuclei, cells or other objects on any channel, on CUDA or
-  Apple Silicon GPUs with a CPU fallback. StarDist optional for nuclei.
-- **Review** — inspect and edit every mask in the browser before measuring.
-- **Quantification** — 18 ImageJ-style measurements per object on every channel, sizes in µm,
-  optional background subtraction, border objects excluded by default.
-- **Analysis** — distributions, co-expression and positivity against a control condition.
-- **Reproducibility** — every table exports with a JSON record of its parameters and the final
-  masks.
+| | |
+|---|---|
+| **Input** | CZI, TIFF, PNG and JPEG at native bit depth. Channel names and pixel size from the metadata or the file names. |
+| **Segmentation** | Cellpose-SAM for nuclei, cells or other objects on any channel, on CUDA or Apple Silicon GPUs with a CPU fallback. StarDist optional for nuclei. |
+| **Review** | Inspect and edit every mask in the browser before measuring. |
+| **Quantification** | 18 ImageJ-style measurements per object on every channel, sizes in µm, optional background subtraction, border objects excluded by default. |
+| **Analysis** | Distributions, co-expression and positivity against a control condition. |
+| **Reproducibility** | Every table exports with a JSON record of its parameters and the final masks. |
 
 ## Installation
 
