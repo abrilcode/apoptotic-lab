@@ -110,7 +110,7 @@ code {
    in brand/apoptotic-lab.png, 1380 x 218 source units. Each glyph is a slice of that sprite used as
    a mask, so it takes the text colour in both themes. At rest only "a" and "-lab" show. On hover
    it types like a terminal: a caret appears after "a" and "poptotic" is typed in one letter per
-   step, pushing "-lab" right; then the caret blinks after "lab". On leave the
+   step, pushing "-lab" right; the caret goes once the word is done. On leave the
    letters are deleted in reverse, like backspacing. */
 .logo {
   --lh: 24px; --u: calc(var(--lh) / 218);
@@ -136,7 +136,7 @@ code {
 /* Caret: a terminal block cursor. A zero-width anchor in the flow, so typed letters push it right;
    the block is drawn by ::after, one character cell wide and the full line tall. White with
    mix-blend-mode: difference inverts what is under it, so the character it covers shows in the
-   negative colour in both themes. c1 sits on the "-" while typing; c2 blinks after "lab".
+   negative colour in both themes. It sits on the "-" while typing and goes once the word is done.
    Visibility rather than opacity toggles it: an opacity animation would isolate the blend. */
 .logo .caret { position: relative; flex: none; width: 0; visibility: hidden; }
 .logo .caret::after {
@@ -144,11 +144,8 @@ code {
   width: calc(90 * var(--u)); height: calc(210 * var(--u));
   background: #FFFFFF; mix-blend-mode: difference;
 }
-.logo .c2 { --off: 12; }
 .logo:hover .c1 { animation: logo-caret-type calc(var(--lead) + 8 * var(--step)) steps(1) forwards; }
-.logo:hover .c2 { animation: logo-caret-blink 1.06s step-end calc(var(--lead) + 8 * var(--step)) infinite; }
 @keyframes logo-caret-type { 0% { visibility: visible; } 100% { visibility: hidden; } }
-@keyframes logo-caret-blink { 0%, 50% { visibility: visible; } 50.01%, 100% { visibility: hidden; } }
 .crumb-sep { color: var(--border-3); font-size: 18px; font-weight: 300; margin: 0 2px; }
 .crumb { font-size: 14px; color: var(--fg-2); white-space: nowrap; }
 #topbar:has(.crumb:empty) .crumb-sep { display: none; }
