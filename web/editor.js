@@ -186,7 +186,7 @@
     return new Promise((res) => {
       const ov = document.createElement("div");
       ov.className = "surface";
-      ov.style.cssText = "position:fixed;inset:0;background:rgba(8,8,7,.72);z-index:40;display:flex;align-items:center;justify-content:center";
+      ov.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:40;display:flex;align-items:center;justify-content:center";
       ov.innerHTML = `<div class="modal-card">
         <p style="margin:0 0 16px">This image has unsaved changes.</p>
         <div style="display:flex;gap:8px;justify-content:flex-end">

@@ -3,45 +3,56 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CelloType</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/app.css?v=7">
+<title>apoptotic-lab</title>
+<link rel="icon" href="/static/brand/favicon.png" type="image/png">
+<link rel="preload" href="/static/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css?v=9">
 </head>
 <body>
 
 <header id="topbar">
-  <span class="brand">CelloType</span>
-  <span class="brand-sub">Segmentation and quantification of multichannel fluorescence images</span>
+  <span class="logo" role="img" aria-label="apoptotic-lab"><span class="g" style="--x:0;--w:128"></span><span class="g x" style="--x:128;--w:125;--i:0;--j:9"></span><span class="g x" style="--x:253;--w:132.5;--i:1;--j:8"></span><span class="g x" style="--x:385.5;--w:125;--i:2;--j:7"></span><span class="g x" style="--x:510.5;--w:72.5;--i:3;--j:6"></span><span class="g x" style="--x:583;--w:124.5;--i:4;--j:5"></span><span class="g x" style="--x:707.5;--w:76;--i:5;--j:4"></span><span class="g x" style="--x:783.5;--w:43.5;--i:6;--j:3"></span><span class="g x" style="--x:827;--w:126;--i:7;--j:2"></span><span class="g" style="--x:953;--w:385"></span><span class="g x" style="--x:1338;--w:42;--i:9;--j:0"></span></span>
+  <span class="crumb-sep" aria-hidden="true">/</span>
+  <span id="crumb" class="crumb"></span>
   <span class="spacer"></span>
-  <button id="outdir-pick" class="quiet">Output folder</button>
-  <span id="outdir-name" class="meta" title="Where Save to folder writes"></span>
-  <span id="device-chip" class="hidden"></span>
-  <button id="restart" class="quiet hidden">Start over</button>
-  <button id="theme-toggle" class="quiet">Dark</button>
+  <span id="device-chip" class="status hidden"></span>
+  <button id="outdir-pick" class="sm" title="Folder where Save to folder writes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4.2l2 2.2h8.8A1.5 1.5 0 0 1 21 9.7v7.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg>Output folder<span id="outdir-name" class="ellip"></span></button>
+  <button id="restart" class="sm hidden">New analysis</button>
+  <button id="theme-toggle" class="sm icon-btn" aria-label="Switch to dark theme" title="Switch to dark theme"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4 8.2 8.2 0 1 0 20 14.6z"/></svg></button>
 </header>
 
-<nav id="steps" class="hidden"></nav>
+<nav id="steps" class="hidden" aria-label="Workflow"></nav>
 
 <main id="main" class="no-steps">
 
-  <!-- Step 0: single vs multiple -->
+  <!-- Start: single image or multiple images -->
   <section id="choice" class="start">
-    <h1>New analysis</h1>
-    <p class="lead">Segment nuclei, cells or other objects on any channel, measure every channel inside each object, and compare conditions.</p>
+    <div class="hero">
+      <h1>New analysis</h1>
+      <p class="lead">Segment nuclei, cells or other objects on any channel, measure every channel inside each object, and compare conditions. Images are processed on this computer.</p>
+    </div>
     <div class="tiles">
       <button class="tile" id="pick-single">
-        <span class="ti">01</span>
-        <span class="t">Single image</span>
-        <span class="d">One image with one or more channels. Segment it, review the result, and measure every channel.</span>
+        <span class="tile-art"><svg viewBox="0 0 560 168" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><rect x="222" y="8" width="176" height="124" rx="6" opacity=".3"/><rect x="206" y="16" width="176" height="124" rx="6" opacity=".55"/><rect x="190" y="24" width="176" height="124" rx="6" fill="var(--card)"/><ellipse cx="300.1" cy="43.5" rx="10.9" ry="8.3" transform="rotate(3 300.1 43.5)"/><circle cx="300.1" cy="43.5" r="3.5" fill="currentColor" stroke="none" opacity=".55"/><ellipse cx="218.7" cy="78.5" rx="11.6" ry="8.5" transform="rotate(23 218.7 78.5)"/><circle cx="218.7" cy="78.5" r="3.7" fill="currentColor" stroke="none" opacity=".55"/><ellipse cx="296.9" cy="131.2" rx="9.7" ry="7.5" transform="rotate(5 296.9 131.2)"/><circle cx="296.9" cy="131.2" r="3.1" fill="currentColor" stroke="none" opacity=".55"/><ellipse cx="212.1" cy="119.9" rx="11.4" ry="10.7" transform="rotate(-15 212.1 119.9)"/><circle cx="212.1" cy="119.9" r="3.6" fill="currentColor" stroke="none" opacity=".55"/><ellipse cx="249.6" cy="118.0" rx="9.9" ry="7.4" transform="rotate(-22 249.6 118.0)"/><circle cx="249.6" cy="118.0" r="3.2" fill="currentColor" stroke="none" opacity=".55"/><ellipse cx="259.8" cy="90.5" rx="12.5" ry="10.8" transform="rotate(-31 259.8 90.5)"/><circle cx="259.8" cy="90.5" r="4.0" fill="currentColor" stroke="none" opacity=".55"/><ellipse cx="304.9" cy="78.6" rx="9.4" ry="7.2" transform="rotate(-13 304.9 78.6)"/><circle cx="304.9" cy="78.6" r="3.0" fill="currentColor" stroke="none" opacity=".55"/></svg></span>
+        <span class="tile-body">
+          <span class="t">Single image<span class="go" aria-hidden="true">Start &rarr;</span></span>
+          <span class="d">One image with one or more channels. Segment it, review the result, and measure every channel.</span>
+          <span class="tile-steps"><span data-n="1">Raw data</span><span data-n="2">Segment</span><span data-n="3">Measure</span><span data-n="4">Analysis</span></span>
+        </span>
       </button>
       <button class="tile" id="pick-multiple">
-        <span class="ti">02</span>
-        <span class="t">Multiple images</span>
-        <span class="d">Several images grouped by condition, segmented on one shared channel and compared.</span>
+        <span class="tile-art"><svg viewBox="0 0 560 168" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><rect x="58" y="34" width="64" height="64" rx="5" fill="var(--card)"/><ellipse cx="81.9" cy="78.7" rx="7.8" ry="6.4" transform="rotate(14 81.9 78.7)"/><circle cx="81.9" cy="78.7" r="2.5" fill="currentColor" stroke="none" opacity=".55"/><ellipse cx="109.0" cy="49.5" rx="8.2" ry="6.4" transform="rotate(-6 109.0 49.5)"/><circle cx="109.0" cy="49.5" r="2.6" fill="currentColor" stroke="none" opacity=".55"/><rect x="130" y="34" width="64" height="64" rx="5" fill="var(--card)"/><ellipse cx="161.6" cy="46.0" rx="8.3" ry="6.2" transform="rotate(12 161.6 46.0)"/><circle cx="161.6" cy="46.0" r="2.6" fill="currentColor" stroke="none" opacity=".55"/><ellipse cx="161.0" cy="72.6" rx="8.5" ry="8.0" transform="rotate(-31 161.0 72.6)"/><circle cx="161.0" cy="72.6" r="2.7" fill="currentColor" stroke="none" opacity=".55"/><rect x="202" y="34" width="64" height="64" rx="5" fill="var(--card)"/><ellipse cx="253.6" cy="79.5" rx="8.1" ry="7.0" transform="rotate(-15 253.6 79.5)"/><circle cx="253.6" cy="79.5" r="2.6" fill="currentColor" stroke="none" opacity=".55"/><ellipse cx="214.1" cy="64.3" rx="7.2" ry="6.3" transform="rotate(-23 214.1 64.3)"/><circle cx="214.1" cy="64.3" r="2.3" fill="currentColor" stroke="none" opacity=".55"/><path d="M58 112v6h208v-6M162 118v8" opacity=".6"/><rect x="294" y="34" width="64" height="64" rx="5" fill="var(--card)"/><ellipse cx="337.6" cy="48.7" rx="6.4" ry="4.7" transform="rotate(-18 337.6 48.7)"/><circle cx="337.6" cy="48.7" r="2.0" fill="currentColor" stroke="none" opacity=".55"/><ellipse cx="308.5" cy="63.8" rx="7.2" ry="6.6" transform="rotate(3 308.5 63.8)"/><circle cx="308.5" cy="63.8" r="2.3" fill="currentColor" stroke="none" opacity=".55"/><rect x="366" y="34" width="64" height="64" rx="5" fill="var(--card)"/><ellipse cx="412.1" cy="57.1" rx="8.7" ry="7.9" transform="rotate(-6 412.1 57.1)"/><circle cx="412.1" cy="57.1" r="2.8" fill="currentColor" stroke="none" opacity=".55"/><ellipse cx="386.5" cy="65.3" rx="6.5" ry="5.0" transform="rotate(6 386.5 65.3)"/><circle cx="386.5" cy="65.3" r="2.1" fill="currentColor" stroke="none" opacity=".55"/><rect x="438" y="34" width="64" height="64" rx="5" fill="var(--card)"/><ellipse cx="466.6" cy="60.0" rx="6.8" ry="4.9" transform="rotate(5 466.6 60.0)"/><circle cx="466.6" cy="60.0" r="2.2" fill="currentColor" stroke="none" opacity=".55"/><ellipse cx="486.0" cy="78.4" rx="8.0" ry="5.9" transform="rotate(26 486.0 78.4)"/><circle cx="486.0" cy="78.4" r="2.6" fill="currentColor" stroke="none" opacity=".55"/><path d="M294 112v6h208v-6M398 118v8" opacity=".6"/></svg></span>
+        <span class="tile-body">
+          <span class="t">Multiple images<span class="go" aria-hidden="true">Start &rarr;</span></span>
+          <span class="d">Several images grouped by condition, segmented on one shared channel and compared.</span>
+          <span class="tile-steps"><span data-n="1">Raw data</span><span data-n="2">Channels</span><span data-n="3">Segment</span><span data-n="4">Measure</span><span data-n="5">Analysis</span></span>
+        </span>
       </button>
+    </div>
+    <div class="env" aria-label="This computer">
+      <div><span class="k">Segmentation device</span><span class="v" id="env-device">Checking</span></div>
+      <div><span class="k">StarDist (optional, nuclei)</span><span class="v" id="env-stardist">Checking</span></div>
+      <div><span class="k">Output folder</span><span class="v" id="env-outdir">Not chosen; downloads go to the browser</span></div>
     </div>
   </section>
 
@@ -49,94 +60,103 @@
   <section id="single" class="hidden">
 
     <div id="uploader" data-step="image" class="panel">
-      <div class="panel-head"><h2>Raw data</h2></div>
+      <div class="panel-head"><div class="ph-text"><h2>Raw data</h2><p class="desc">One image: a multichannel file, or the single-channel files of one field.</p></div></div>
       <input type="file" id="files" class="hidden" multiple accept=".czi,.tif,.tiff,.png,.jpg,.jpeg">
       <div class="upload-grid">
-        <div class="upload-left">
+        <div class="card upload-card">
           <div class="drop" id="drop-single">
             <div class="drop-prompt">
+              <span class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15.5V4M7.5 8.5 12 4l4.5 4.5M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/></svg></span>
               <span class="dt">Drop the image here, or click to choose</span>
-              <span class="dm">czi &middot; tif &middot; tiff &middot; png &middot; jpg &middot; jpeg</span>
+              <span class="dm">CZI, TIFF, PNG or JPEG</span>
             </div>
             <div id="filelist-single" class="thumbs"></div>
           </div>
-          <div class="rowend">
-            <button id="go" class="primary" disabled>Load image</button>
+          <div class="card-foot">
             <span id="busy" class="loading hidden"><span class="prog run"><i></i></span><span class="meta">Reading files</span></span>
+            <button id="go" class="primary" disabled>Load image</button>
           </div>
         </div>
         <aside class="upload-help">
-          <h3 class="kicker">Accepted files</h3>
-          <p class="note"><b>One multichannel file</b> (all channels in a single file, for example a CZI), or the <b>separate single-channel files</b> of the same image.</p>
-          <p class="note">For separate files, give each the same base name and a different marker suffix, <code>name-MARKER.ext</code>, for example <code>sample-DAPI.tif</code> and <code>sample-CD3.tif</code>. Single-channel TIFFs that share the base name are read as the channels of one image.</p>
-          <p class="note">Formats: CZI, TIFF, PNG, JPEG. PNG and JPEG are display formats (8-bit RGB, often adjusted or compressed), so their intensities are not quantitative.</p>
+          <h3>Accepted files</h3>
+          <dl class="kv">
+            <dt>One multichannel file</dt>
+            <dd>All channels in a single file, for example a CZI.</dd>
+            <dt>Separate single-channel files</dt>
+            <dd>Same base name and a different marker suffix, <code>name-MARKER.ext</code>: <code>sample-DAPI.tif</code> and <code>sample-CD3.tif</code> are read as the channels of one image.</dd>
+            <dt>Formats</dt>
+            <dd>CZI and TIFF are read at native bit depth. PNG and JPEG are display formats (8-bit RGB, often adjusted or compressed), so their intensities are not quantitative.</dd>
+          </dl>
         </aside>
       </div>
       <div id="upmsg"></div>
     </div>
 
     <div id="workspace" class="hidden" data-step="segment">
+      <div class="panel-head span"><div class="ph-text"><h2>Segment</h2><p class="desc">Choose the channel, the objects and the model; review and edit the masks before measuring.</p></div><span id="seg-meta" class="meta"></span></div>
       <div class="controls">
-        <div class="panel-head"><h2>Segment</h2><span id="seg-meta" class="meta"></span></div>
-        <div class="block">
-          <h3>View</h3>
-          <div id="viewlist"></div>
-          <div class="actionrow"><button id="view-btn" class="sm hidden">Display and contrast</button></div>
-        </div>
         <div class="block">
           <h3>What to segment</h3>
-          <div id="segpick"></div>
-          <div id="seg-note" class="note"></div>
-          <div class="field engine-opt"><span>Objects</span>
-            <div class="choices">
-              <label><input type="radio" name="segobj-single" value="nuclei" checked> Nuclei</label>
-              <label><input type="radio" name="segobj-single" value="cells"> Cells or other objects</label><span class="info" tabindex="0" role="button" aria-label="More information"><span class="info-i">i</span><span class="info-tip" role="tooltip">Any channel can be segmented: a nuclear stain such as DAPI, or a marker that outlines cells or other structures. Cellpose-SAM segments all of them. StarDist is trained on fluorescent nuclei, so it is offered only when the objects are nuclei.</span></span>
-            </div></div>
-          <div class="field engine-opt"><span>Segmentation model</span>
-            <div class="choices">
-              <label><input type="radio" name="segengine-single" value="cellpose" checked> Cellpose-SAM</label>
-              <label class="sd-opt"><input type="radio" name="segengine-single" value="stardist"> StarDist</label><span class="info" tabindex="0" role="button" aria-label="More information"><span class="info-i">i</span><span class="info-tip" role="tooltip">StarDist (2D_versatile_fluo) is trained on fluorescent nuclei, so it is offered for nuclei only. It runs at full resolution with the settings of the reference workflow in the agreement study (normalisation to the 1st to 99.8th percentiles, probability 0.5, overlap 0.4). Cellpose-SAM is the default; the agreement study compared it with this StarDist workflow.</span></span>
-            </div></div>
-          <div class="edge-opt">
-            <label><input type="checkbox" id="edge-single" checked> Exclude objects touching the image border</label><span class="info" tabindex="0" role="button" aria-label="More information"><span class="info-i">i</span><span class="info-tip" role="tooltip">Objects cut by the image border have a smaller area and lower total intensity than complete ones, so by default they are left out of the table, plots and statistics. They stay visible with an orange outline and keep their number. The setting can be changed after segmenting; no new segmentation is needed.</span></span>
+          <div class="sect">
+            <div id="segpick"></div>
+            <div id="seg-note" class="note"></div>
           </div>
-          <div class="actionrow">
-            <button id="continue" class="primary" disabled>Segment</button>
-            <button id="edit-seg" class="hidden">Edit masks</button>
+          <div class="sect">
+            <div class="field engine-opt"><span>Objects</span>
+              <div class="choices">
+                <label><input type="radio" name="segobj-single" value="nuclei" checked> Nuclei</label>
+                <label><input type="radio" name="segobj-single" value="cells"> Cells or other objects</label><span class="info" tabindex="0" role="button" aria-label="More information"><span class="info-i">i</span><span class="info-tip" role="tooltip">Any channel can be segmented: a nuclear stain such as DAPI, or a marker that outlines cells or other structures. Cellpose-SAM segments all of them. StarDist is trained on fluorescent nuclei, so it is offered only when the objects are nuclei.</span></span>
+              </div></div>
+            <div class="field engine-opt"><span>Segmentation model</span>
+              <div class="choices">
+                <label><input type="radio" name="segengine-single" value="cellpose" checked> Cellpose-SAM</label>
+                <label class="sd-opt"><input type="radio" name="segengine-single" value="stardist"> StarDist</label><span class="info" tabindex="0" role="button" aria-label="More information"><span class="info-i">i</span><span class="info-tip" role="tooltip">StarDist (2D_versatile_fluo) is trained on fluorescent nuclei, so it is offered for nuclei only. It runs at full resolution with the settings of the reference workflow in the agreement study (normalisation to the 1st to 99.8th percentiles, probability 0.5, overlap 0.4). Cellpose-SAM is the default; the agreement study compared it with this StarDist workflow.</span></span>
+              </div></div>
+            <div class="edge-opt">
+              <label><input type="checkbox" id="edge-single" checked> Exclude objects touching the image border</label><span class="info" tabindex="0" role="button" aria-label="More information"><span class="info-i">i</span><span class="info-tip" role="tooltip">Objects cut by the image border have a smaller area and lower total intensity than complete ones, so by default they are left out of the table, plots and statistics. They stay visible with an orange outline and keep their number. The setting can be changed after segmenting; no new segmentation is needed.</span></span>
+            </div>
           </div>
           <div id="msgs"></div>
+          <div class="card-foot">
+            <button id="edit-seg" class="hidden">Edit masks</button>
+            <button id="continue" class="primary" disabled>Segment</button>
+          </div>
         </div>
-        <div class="rowend"><button class="back">Back</button><button id="to-measure-single" class="primary hidden">Continue to Measure</button></div>
       </div>
       <div class="viewer">
+        <div class="viewer-bar">
+          <div id="viewlist" class="views" role="tablist" aria-label="View"></div>
+          <button id="view-btn" class="sm hidden">Display and contrast</button>
+        </div>
+        <div class="stage"><img id="bigimg" alt=""></div>
         <div id="caption"></div>
-        <img id="bigimg" alt="">
       </div>
+      <div class="foot span"><button class="back">Back</button><button id="to-measure-single" class="primary hidden">Continue to Measure</button></div>
     </div>
 
     <div id="measure-panel" data-step="measure" class="panel">
-      <div class="panel-head"><h2>Measure</h2><span class="ctx-slot"></span><span id="measure-meta" class="meta"></span></div>
+      <div class="panel-head"><div class="ph-text"><h2>Measure</h2><p class="desc">Every channel measured inside each object. Each table comes with its parameter record and the final masks.</p></div><span class="ctx-slot"></span><span id="measure-meta" class="meta"></span></div>
       <div class="block meas-grid" id="bg-sub-single-wrap">
         <div><h3>Set measurements</h3><div id="meas-set-single"></div></div>
         <div class="meas-options">
           <h3>Measurement options</h3>
-            <div class="optline"><label><input type="checkbox" id="bg-sub-single"> Subtract background</label><span class="info" tabindex="0" role="button" aria-label="More information"><span class="info-i">i</span><span class="info-tip" role="tooltip">Optional, off by default. Per image and channel, the median of the pixels outside all objects, leaving out a 5 px margin around them, is subtracted from Mean gray value and Integrated density. Other measurements use the original values. Objects dimmer than the background get negative values. The subtracted value is in the background column. The agreement study used images without background subtraction or any other preprocessing; the option suits only some images, and the same setting has to be used for every image compared, including the controls.</span></span></div>
-            <div class="px-opt"><label class="inline">Pixel size <input type="text" id="px-single" inputmode="decimal" size="8" autocomplete="off"> µm per pixel</label><span class="info" tabindex="0" role="button" aria-label="More information"><span class="info-i">i</span><span class="info-tip" role="tooltip">Read from the file when it carries one (CZI, OME-TIFF, ImageJ TIFF). For images without one, the pixel size from the microscope or a calibration slide can be entered here; it is used only for those images and never replaces a pixel size stored in a file. Sizes are then also given in µm and µm². Pixel columns are always kept, and positions stay in pixels.</span></span></div>
-            <p class="note" id="px-single-note"></p>
+          <div class="optline"><label><input type="checkbox" id="bg-sub-single"> Subtract background</label><span class="info" tabindex="0" role="button" aria-label="More information"><span class="info-i">i</span><span class="info-tip" role="tooltip">Optional, off by default. Per image and channel, the median of the pixels outside all objects, leaving out a 5 px margin around them, is subtracted from Mean gray value and Integrated density. Other measurements use the original values. Objects dimmer than the background get negative values. The subtracted value is in the background column. The agreement study used images without background subtraction or any other preprocessing; the option suits only some images, and the same setting has to be used for every image compared, including the controls.</span></span></div>
+          <div class="px-opt"><label class="inline">Pixel size <input type="text" id="px-single" inputmode="decimal" size="8" autocomplete="off"> µm per pixel</label><span class="info" tabindex="0" role="button" aria-label="More information"><span class="info-i">i</span><span class="info-tip" role="tooltip">Read from the file when it carries one (CZI, OME-TIFF, ImageJ TIFF). For images without one, the pixel size from the microscope or a calibration slide can be entered here; it is used only for those images and never replaces a pixel size stored in a file. Sizes are then also given in µm and µm². Pixel columns are always kept, and positions stay in pixels.</span></span></div>
+          <p class="note" id="px-single-note"></p>
         </div>
+        <div class="card-foot"><button id="measure-btn" class="primary">Measure</button></div>
       </div>
-      <div class="actionrow"><button id="measure-btn" class="primary">Measure</button></div>
       <div id="measure-out"></div>
-      <div class="rowend">
+      <div class="foot">
         <button class="back">Back</button>
         <button id="to-plot" class="primary hidden">Continue to Analysis</button>
       </div>
     </div>
 
     <div id="plot-panel" data-step="plot" class="panel">
-      <div class="panel-head"><h2>Analysis</h2><span class="ctx-slot"></span></div>
+      <div class="panel-head"><div class="ph-text"><h2>Analysis</h2><p class="desc">Distribution of one measurement per channel. Descriptive only.</p></div><span class="ctx-slot"></span></div>
       <div id="single-plot-out"></div>
-      <div class="rowend"><button class="back">Back</button></div>
+      <div class="foot"><button class="back">Back</button></div>
     </div>
   </section>
 
@@ -144,28 +164,35 @@
   <section id="multiple" class="hidden">
 
     <div id="muploader" data-step="images" class="panel">
-      <div class="panel-head"><h2>Raw data</h2></div>
+      <div class="panel-head"><div class="ph-text"><h2>Raw data</h2><p class="desc">Images of one experiment, grouped by condition from their file names.</p></div></div>
       <input type="file" id="mfiles" class="hidden" multiple accept=".czi,.tif,.tiff,.png,.jpg,.jpeg">
       <div class="upload-grid">
-        <div class="upload-left">
+        <div class="card upload-card">
           <div class="drop" id="drop-batch">
             <div class="drop-prompt">
+              <span class="drop-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15.5V4M7.5 8.5 12 4l4.5 4.5M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/></svg></span>
               <span class="dt">Drop images here, or click to choose</span>
-              <span class="dm">czi &middot; tif &middot; tiff &middot; png &middot; jpg &middot; jpeg</span>
+              <span class="dm">CZI, TIFF, PNG or JPEG</span>
             </div>
             <div id="filelist-batch" class="thumbs"></div>
           </div>
-          <div class="rowend">
-            <button id="mgo" class="primary" disabled>Load images</button>
+          <div class="card-foot">
             <span id="mbusy" class="loading hidden"><span class="prog run"><i></i></span><span class="meta">Reading files</span></span>
+            <button id="mgo" class="primary" disabled>Load images</button>
           </div>
         </div>
         <aside class="upload-help">
-          <h3 class="kicker">File naming</h3>
-          <p class="note">Name each file <code>condition-Foto&lt;n&gt;-marker.ext</code>, for example <code>FN-D0-Foto1-DAPI.tif</code>. Each image is one <code>Foto&lt;n&gt;</code> inside a condition.</p>
-          <p class="note"><b>One multichannel file per image</b> (for example <code>FN-D0-Foto1.czi</code>, all channels inside), or the <b>separate single-channel files</b> of that image.</p>
-          <p class="note">Separate single-channel <code>.tif</code> files that share the same <code>condition-Foto&lt;n&gt;</code> name are read as the channels of one image. This grouping applies only to single-channel TIFFs, not to CZI or multichannel TIFF (which already hold all their channels).</p>
-          <p class="note">Formats: CZI, TIFF, PNG, JPEG. PNG and JPEG are display formats (8-bit RGB, often adjusted or compressed): they work for counting, but their intensities are not quantitative.</p>
+          <h3>File naming</h3>
+          <dl class="kv">
+            <dt>Pattern</dt>
+            <dd><code>condition-Foto&lt;n&gt;-marker.ext</code>, for example <code>FN-D0-Foto1-DAPI.tif</code>. Each image is one <code>Foto&lt;n&gt;</code> (a technical replicate) inside a condition.</dd>
+            <dt>One multichannel file per image</dt>
+            <dd>For example <code>FN-D0-Foto1.czi</code>, with all channels inside.</dd>
+            <dt>Separate single-channel files</dt>
+            <dd>Single-channel TIFFs that share the same <code>condition-Foto&lt;n&gt;</code> name are read as the channels of one image. This grouping applies only to single-channel TIFFs, not to CZI or multichannel TIFF (which already hold all their channels).</dd>
+            <dt>Formats</dt>
+            <dd>CZI, TIFF, PNG, JPEG. PNG and JPEG are display formats (8-bit RGB, often adjusted or compressed): they work for counting, but their intensities are not quantitative.</dd>
+          </dl>
         </aside>
       </div>
       <div id="mupmsg"></div>
@@ -174,21 +201,27 @@
     <div id="mworkspace" class="hidden">
 
       <div id="images-panel" data-step="images" class="panel">
-        <div class="panel-head"><h2>Raw data</h2><span id="images-count" class="meta"></span></div>
+        <div class="panel-head"><div class="ph-text"><h2>Raw data</h2><p class="desc">Check the condition and the technical replicate of every image, and mark the control.</p></div><span id="images-count" class="meta"></span></div>
         <div class="block">
           <h3>Conditions<span class="info" tabindex="0" role="button" aria-label="More information"><span class="info-i">i</span><span class="info-tip" role="tooltip">Condition is the group being compared. Technical replicate is the field number (<code>Foto&lt;n&gt;</code>) inside that condition: another imaged position of the sample, not an independent biological replicate. Click a thumbnail to inspect the channels.</span></span></h3>
           <div id="condsummary"></div>
         </div>
-        <div id="btable"></div>
-        <div id="mrejected"></div>
-        <div id="maddmsg"></div>
-        <div class="rowend">
-          <button id="maddbtn">Add images</button>
-          <button id="mremovesel" disabled>Remove selected</button>
-          <span id="sel-count" class="meta"></span>
+        <div class="block">
+          <div class="tbar">
+            <div class="tbar-group"><h3 class="tbar-title">Images</h3><span id="sel-count" class="meta"></span></div>
+            <div class="tbar-group">
+              <span id="maddbusy" class="loading hidden"><span class="prog run"><i></i></span><span class="meta">Adding images</span></span>
+              <button id="mremovesel" class="sm" disabled>Remove selected</button>
+              <button id="maddbtn" class="sm">Add images</button>
+              <input type="file" id="maddfiles" class="hidden" multiple accept=".czi,.tif,.tiff,.png,.jpg,.jpeg">
+            </div>
+          </div>
+          <div id="btable"></div>
+          <div id="mrejected"></div>
+          <div id="maddmsg"></div>
+        </div>
+        <div class="foot">
           <button id="to-channels" class="primary" disabled>Continue to Channels</button>
-          <input type="file" id="maddfiles" class="hidden" multiple accept=".czi,.tif,.tiff,.png,.jpg,.jpeg">
-          <span id="maddbusy" class="loading hidden"><span class="prog run"><i></i></span><span class="meta">Adding images</span></span>
         </div>
       </div>
 
@@ -204,9 +237,10 @@
 <!-- Inspect one image at a time: browse the dataset, see each channel -->
 <div id="inspector" class="surface">
   <div class="insp-head">
-    <strong id="insp-title"></strong>
+    <strong>Channels</strong>
+    <span id="insp-title" class="meta ellip"></span>
     <span id="insp-pos" class="meta"></span>
-    <span class="spacer" style="flex:1"></span>
+    <span class="spacer"></span>
     <button id="insp-prev" class="sm">Previous</button>
     <button id="insp-next" class="sm">Next</button>
     <span class="bar-sep"></span>
@@ -214,7 +248,7 @@
   </div>
   <div class="insp-body">
     <div class="insp-side">
-      <h3>Channels</h3>
+      <h3>View</h3>
       <div id="insp-views"></div>
       <div id="insp-meta" class="meta" style="margin-top:14px"></div>
     </div>
@@ -228,7 +262,7 @@
     <strong>Edit masks</strong>
     <span id="ed-count"></span>
     <span id="ed-pos" class="meta"></span>
-    <span style="flex:1"></span>
+    <span class="spacer"></span>
     <button id="ed-remove" class="sm">Remove</button>
     <button id="ed-draw" class="sm">Draw outline</button>
     <span class="bar-sep"></span>
@@ -245,12 +279,12 @@
   <div class="ed-stage" id="ed-stage"><canvas id="ed-canvas"></canvas></div>
 </div>
 
-<!-- Display viewer: channels in chosen colours + segmentation overlay -->
+<!-- Display and contrast: channels in chosen colours + segmentation overlay -->
 <div id="viewer" class="surface">
   <div class="insp-head">
     <strong>Display and contrast</strong>
-    <span id="vw-title" class="meta"></span>
-    <span style="flex:1"></span>
+    <span id="vw-title" class="meta ellip"></span>
+    <span class="spacer"></span>
     <button id="vw-prev" class="sm">Previous</button>
     <button id="vw-next" class="sm">Next</button>
     <span class="bar-sep"></span>
@@ -266,7 +300,7 @@
 </div>
 
 <div id="lightbox"><img alt=""></div>
-<script src="/static/editor.js?v=9"></script>
+<script src="/static/editor.js?v=10"></script>
 
 <script>
 const $ = s => document.querySelector(s);
@@ -281,7 +315,7 @@ const pad2 = n => String(n).padStart(2, "0");
   const btn = $("#theme-toggle");
   const apply = (dark) => {
     document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-    if (btn) btn.textContent = dark ? "Light" : "Dark";
+    if (btn) { const t = dark ? "Switch to light theme" : "Switch to dark theme"; btn.setAttribute("aria-label", t); btn.title = t; }
     try { localStorage.setItem("pfcv2-dark", dark ? "1" : "0"); } catch (e) {}
   };
   let dark = false; try { dark = localStorage.getItem("pfcv2-dark") === "1"; } catch (e) {}
@@ -312,14 +346,17 @@ const Flow = (() => {
 
   function render() {
     const nav = $("#steps");
+    $("#crumb").textContent = !mode ? "" : mode === "single" ? "Single image" : "Multiple images";
     if (!mode) { nav.classList.add("hidden"); nav.innerHTML = ""; return; }
     nav.classList.remove("hidden");
-    nav.innerHTML = `<div class="steps-title">${mode === "single" ? "Single image" : "Multiple images"}</div>`
-      + DEFS[mode].map((s, i) => {
-        const cls = s.id === cur ? "is-active" : open.has(s.id) ? "is-done" : "is-todo";
-        return `<button class="step ${cls}" data-go="${s.id}"><span class="n">${pad2(i + 1)}</span>`
-          + `<span class="sl">${esc(s.label)}<span class="sh">${esc(s.hint || "")}</span></span></button>`;
-      }).join("");
+    // workflow as tabs: number, or a check once the step has been reached; the hint is the tooltip
+    const CHECK = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.6 6.3l2.2 2.2 4.6-4.9"/></svg>`;
+    const at = DEFS[mode].findIndex(s => s.id === cur);
+    nav.innerHTML = `<ol>` + DEFS[mode].map((s, i) => {
+        const cls = s.id === cur ? "is-active" : open.has(s.id) ? (i < at ? "is-done" : "is-open") : "is-todo";
+        return `<li><button class="step ${cls}" data-go="${s.id}" title="${esc(s.hint || "")}"${s.id === cur ? ' aria-current="step"' : ""}>`
+          + `<span class="n">${cls === "is-done" ? CHECK : i + 1}</span><span class="sl">${esc(s.label)}</span></button></li>`;
+      }).join("") + `</ol>`;
     nav.querySelectorAll(".step").forEach(b => b.onclick = () => go(b.dataset.go));
   }
   function paint() {
@@ -415,6 +452,7 @@ async function chooseFolder() {
     OUT_HANDLE = await window.showDirectoryPicker({ mode: "readwrite" });
     const el = document.getElementById("outdir-name");
     if (el) el.textContent = OUT_HANDLE.name;
+    const env = document.getElementById("env-outdir"); if (env) env.textContent = OUT_HANDLE.name;
   } catch (e) { /* user cancelled the picker */ }
 }
 
@@ -528,10 +566,10 @@ function renderMeasure(sel, r, filename, maskItems) {
     const sortCtl = r.result_token
       ? `<label class="inline">Sort by <select class="sortby">${["", ...r.columns].map(c => `<option value="${esc(c)}" ${c === st.by ? "selected" : ""}>${c ? esc(c) : "File order"}</option>`).join("")}</select></label>`
         + `<label class="inline">Order <select class="sortdir"><option value="asc" ${!st.desc ? "selected" : ""}>Ascending</option><option value="desc" ${st.desc ? "selected" : ""}>Descending</option></select></label>` : "";
-    const extra = (r.run_parameters ? `<button class="dlparams">Download parameters</button>` : "")
-      + (maskItems && maskItems.length ? `<button class="dlmasks">Download masks</button>` : "");
+    const extra = (r.run_parameters ? `<button class="dlparams sm">Download parameters</button>` : "")
+      + (maskItems && maskItems.length ? `<button class="dlmasks sm">Download masks</button>` : "");
     const paramsTip = r.run_parameters ? infoTip("The parameter record (JSON) states how this table was produced: versions, segmentation settings, manual mask edits, background, border rule and measurements. Save to folder writes the table and its parameter record together. When masks were edited by hand, the masks have to be kept as well: an edited run cannot be reproduced from the parameters alone.") : "";
-    let h = `<div class="tbar"><div class="tbar-group"><button class="dlcsv primary">Download CSV</button>${extra}<button class="savecsv">Save to folder</button>${paramsTip}</div>
+    let h = `<div class="tbar"><div class="tbar-group"><button class="dlcsv primary sm">Download CSV</button>${extra}<button class="savecsv sm">Save to folder</button>${paramsTip}</div>
              <div class="tbar-group">${sortCtl}<span class="meta">${r.nrows} rows, showing ${Math.min(r.nrows, st.preview.length)}</span></div></div>`;
     h += `<div class="tablewrap"><table class="batch"><thead><tr>`;
     r.columns.forEach(c => h += `<th class="${TEXTCOLS.has(c) ? "" : "num"}">${esc(c)}</th>`);
@@ -668,7 +706,7 @@ function singlePlotPanel(r) {
     const pr = await (await fetch("/api/batch/plot", { method: "POST", body: fd })).json();
     if (pr.error) { $("#single-fig").innerHTML = `<p class="flag">${esc(pr.error)}</p>`; $("#single-dl").innerHTML = ""; return; }
     $("#single-fig").innerHTML = `<img class="cmpimg" src="${pr.figure}" alt="">`;
-    $("#single-dl").innerHTML = `<a class="btn" download="distributions.png" href="${pr.figure}">Download plot</a> <button class="savefig">Save to folder</button>`;
+    $("#single-dl").innerHTML = `<a class="btn sm" download="distributions.png" href="${pr.figure}">Download plot</a> <button class="savefig sm">Save to folder</button>`;
     { const sv = $("#single-dl .savefig"); if (sv) sv.onclick = () => saveClick(sv, "distributions.png", pr.figure, true); }
     const im = $("#single-fig .cmpimg"); if (im) im.onclick = () => openLightbox(im.src);
   };
@@ -770,7 +808,7 @@ function buildControls(f, rejected, skipped) {
   $("#viewlist").innerHTML = v;
 
   // Segment picker + editable markers
-  let s = `<p class="note">Channel to segment${infoTip("Any channel: a nuclear stain or another marker. Each channel can be renamed (the marker or antibody, the fluorophore, or the colour); these labels are used in the tables and plots.")}</p>`;
+  let s = `<div class="sect-title">Channel to segment${infoTip("Any channel: a nuclear stain or another marker. Each channel can be renamed (the marker or antibody, the fluorophore, or the colour); these labels are used in the tables and plots.")}</div>`;
   f.channels.forEach((c, i) => {
     s += `<div class="chrow">
       <label><input type="radio" name="segch" value="${c.id}" data-i="${i}"><span class="meta">C${i + 1}</span></label>
@@ -791,7 +829,7 @@ function buildControls(f, rejected, skipped) {
   // Display viewer (channels in colour + segmentation overlay). Works before
   // segmenting too; after segmenting it also offers contours and filled masks.
   $("#view-btn").classList.remove("hidden");
-  $("#view-btn").onclick = () => Viewer.open([{ token: SINGLE_TOKEN, name: SINGLE_NAME }], 0, SEG_OVERLAY != null);
+  $("#view-btn").onclick = () => Viewer.open([{ token: SINGLE_TOKEN, name: SINGLE_NAME }], 0, SEG_OVERLAY != null, singleChannelNames());
 
   // Editing a marker relabels its view button and the caption
   f.channels.forEach((c, i) => {
@@ -1317,7 +1355,7 @@ function renderChannels() {
   const L = computeLayout();
   if (L.empty) { p.innerHTML = ""; return; }
 
-  const head = `<div class="panel-head"><h2>Channels</h2><span class="meta">${BFIELDS.length} images</span></div>`;
+  const head = `<div class="panel-head"><div class="ph-text"><h2>Channels</h2><p class="desc">Name the markers and choose what to segment; the same choice applies to every image.</p></div><span class="meta">${BFIELDS.length} images</span></div>`;
 
   if (!L.ok) {
     let msg = `<div class="flag"><b>The images are not consistent. Fix this before choosing a channel to segment.</b></div>`;
@@ -1333,7 +1371,7 @@ function renderChannels() {
       msg += `<div class="flag">Images have different numbers of channels:</div>`;
       Object.keys(byCount).forEach(c => { msg += `<div class="flag">${c} channels: ${byCount[c].map(esc).join(", ")}</div>`; });
     }
-    p.innerHTML = head + msg;
+    p.innerHTML = head + `<div class="block">${msg}</div>` + `<div class="foot"><button class="back">Back</button></div>`;
     SEG_CHANNEL = null;
     return;
   }
@@ -1348,16 +1386,16 @@ function renderChannels() {
     return o;
   };
 
-  let h = `<div class="work-grid"><div class="work-left">` + head;
+  let h = head + `<div class="work-grid"><div class="work-left">`;
   h += `<div class="block"><h3>Markers${infoTip(`Every image has ${L.n} channels. Name each one: the marker or antibody, the fluorophore, or the colour. These labels are used in the tables and plots.`)}</h3>`;
-  h += `<table class="batch" style="max-width:520px"><thead><tr><th>Channel</th><th>Marker</th></tr></thead><tbody>`;
+  h += `<table class="batch"><thead><tr><th style="width:84px">Channel</th><th>Marker</th></tr></thead><tbody>`;
   for (let i = 0; i < L.n; i++) {
     h += `<tr><td class="meta">C${i + 1}</td><td><input type="text" class="chlabel" data-i="${i}" value="${esc(CHANNEL_LABELS[i])}"></td></tr>`;
   }
   h += `</tbody></table></div>`;
 
   h += `<div class="block"><h3>What to segment</h3>
-    <label class="field" style="max-width:280px"><span>Channel to segment</span>
+    <label class="field" style="max-width:320px"><span>Channel to segment</span>
       <select id="segchannel">${chanOpts(SEG_CHANNEL)}</select></label>
     <div id="chan-msg"></div>
     <div class="field engine-opt"><span>Objects</span>
@@ -1373,18 +1411,20 @@ function renderChannels() {
     <div class="edge-opt">
     <label><input type="checkbox" id="edge-batch" ${EDGE_EXCLUDE ? "checked" : ""}> Exclude objects touching the image border</label><span class="info" tabindex="0" role="button" aria-label="More information"><span class="info-i">i</span><span class="info-tip" role="tooltip">Objects cut by the image border have a smaller area and lower total intensity than complete ones, so by default they are left out of the table, plots and statistics. They stay visible with an orange outline and keep their number. The setting can be changed after segmenting; no new segmentation is needed.</span></span></div></div>`;
 
-  h += `<div class="rowend"><button class="back">Back</button>
-        <button id="segall" class="primary">Segment all images</button></div>`;
   h += `</div><aside class="work-right"><div class="viewer-inline">
       <div class="vi-head"><strong id="cx-title" class="ellip"></strong><span style="flex:1"></span>
         <button id="cx-prev" class="sm">Previous</button><span id="cx-pos" class="meta"></span><button id="cx-next" class="sm">Next</button>${infoTip("Browse each image and its channels while naming them. Click the image to enlarge it.", "right")}</div>
       <div class="vi-views" id="cx-views"></div>
       <div class="vi-img"><img id="cx-img" alt="" title="Click to enlarge"></div>
       </div></aside></div>`;
+  h += `<div class="foot"><button class="back">Back</button><button id="segall" class="primary">Segment all images</button></div>`;
   p.innerHTML = h;
 
   document.querySelectorAll(".chlabel").forEach(el =>
-    el.addEventListener("input", () => { CHANNEL_LABELS[+el.dataset.i] = el.value; }));
+    el.addEventListener("input", () => {
+      const i = +el.dataset.i; CHANNEL_LABELS[i] = el.value;
+      const o = $("#segchannel") && $("#segchannel").options[i + 1]; if (o) o.textContent = `C${i + 1} · ${el.value}`;
+    }));
   const segSel = $("#segchannel");
   if (segSel) segSel.onchange = () => { SEG_CHANNEL = segSel.value === "" ? null : +segSel.value; $("#chan-msg").innerHTML = ""; };
   const syncMode = () => {
@@ -1410,28 +1450,26 @@ let SEG_SEL = 0;   // which segmented image is shown in the docked results viewe
 
 function renderSegmentPanel() {
   const p = $("#segment-panel");
-  p.innerHTML = `<div class="work-grid"><div class="work-left">
-    <div class="panel-head"><h2>Segment</h2></div>
+  p.innerHTML = `<div class="panel-head"><div class="ph-text"><h2>Segment</h2><p class="desc">Every image segmented on the same channel. Each mask can be reviewed and edited before measuring.</p></div></div>
+    <div class="work-grid"><div class="work-left">
     <div class="block seg-status">
     <p class="note" id="seg-engine-note"><span class="seg-verb">Segmenting</span> with <b>${SEG_ENGINE === "stardist" ? "StarDist" : "Cellpose-SAM"}</b>${SEG_ENGINE === "stardist" ? " (2D_versatile_fluo)" : (DEVICE_LABEL ? ", on " + DEVICE_LABEL : "")}.</p>
     <div class="loading" id="segbar-wrap"><span class="prog run" id="segbar"><i></i></span>
       <span id="segprogress" class="meta"></span></div>
     <div class="edge-opt"><label><input type="checkbox" id="edge-batch-after" ${EDGE_EXCLUDE ? "checked" : ""}> Exclude objects touching the image border</label>${infoTip("Changing this redraws every image; no new segmentation is run.")}</div></div>
     <div id="segresults"></div>
-    <div class="rowend">
-      <button class="back">Back</button>
-      <button id="to-measure" class="primary hidden">Continue to Measure</button>
-    </div></div>
+    </div>
     <aside class="work-right"><div class="viewer-inline">
       <div class="vi-head"><strong id="sv-title" class="ellip"></strong><span style="flex:1"></span>
         <button id="sv-prev" class="sm" disabled>Previous</button><span id="sv-pos" class="meta"></span><button id="sv-next" class="sm" disabled>Next</button></div>
       <div class="vi-views"><button id="sv-view" class="sm" disabled>Display and contrast</button><button id="sv-edit" class="sm" disabled>Edit masks</button>
         <span style="flex:1"></span>${infoTip('Click a row to show its overlay here. "Display and contrast" opens per-channel colour, brightness and contrast, and the histogram.', "right")}</div>
       <div class="vi-img empty" id="sv-box"><img id="sv-img" alt="" title="Click for display and contrast"><span class="vi-empty">The first segmented image appears here.</span></div>
-    </div></aside></div>`;
+    </div></aside></div>
+    <div class="foot"><button class="back">Back</button><button id="to-measure" class="primary hidden">Continue to Measure</button></div>`;
   $("#sv-prev").onclick = () => svSelect(SEG_SEL - 1);
   $("#sv-next").onclick = () => svSelect(SEG_SEL + 1);
-  const openView = () => { if (BSEG.length) Viewer.open(BSEG.map(s => ({ token: s.token, name: s.key })), SEG_SEL, true); };
+  const openView = () => { if (BSEG.length) Viewer.open(BSEG.map(s => ({ token: s.token, name: s.key })), SEG_SEL, true, CHANNEL_LABELS); };
   $("#sv-view").onclick = openView;
   $("#sv-img").onclick = openView;
   $("#sv-edit").onclick = () => { if (!BSEG.length) return; Editor.openBatch(BSEG, SEG_SEL, (idx, overlay, count) => {
@@ -1576,7 +1614,7 @@ function measChecklist() {
 function renderMeasurePanel() {
   const p = $("#measure-panel-b");
   const total = BSEG.reduce((a, s) => a + s.count, 0);
-  p.innerHTML = `<div class="panel-head"><h2>Measure</h2>
+  p.innerHTML = `<div class="panel-head"><div class="ph-text"><h2>Measure</h2><p class="desc">Every channel measured inside each object, for every image. Each table comes with its parameter record and the final masks.</p></div>
       <span class="meta">${BSEG.length} images &middot; ${total} objects</span></div>
     <div class="block meas-grid">
       <div><h3>Set measurements</h3><div id="meas-set">${measChecklist()}</div></div>
@@ -1584,10 +1622,10 @@ function renderMeasurePanel() {
         <div class="optline"><label><input type="checkbox" id="bg-sub"> Subtract background</label>${infoTip('Optional, off by default. Per image and channel, the median of the pixels outside all objects, leaving out a 5 px margin around them, is subtracted from Mean gray value and Integrated density. Other measurements use the original values. Objects dimmer than the background get negative values. The subtracted value is in the background column. The agreement study used images without background subtraction or any other preprocessing; the option suits only some images, and the same setting has to be used for every image compared, including the controls.')}</div>
         <div class="px-opt"><label class="inline">Pixel size <input type="text" id="px-batch" inputmode="decimal" size="8" autocomplete="off"> µm per pixel</label>${infoTip('Optional. Sizes are given in µm and µm² for every image whose file carries a pixel size (CZI, OME-TIFF, ImageJ TIFF). For images without one, the pixel size from the microscope or a calibration slide can be entered here; it is used only for those images and never replaces a pixel size stored in a file. Pixel columns are always kept, and positions stay in pixels.')}</div>
       </div>
+      <div class="card-foot"><button id="measure-all" class="primary">Measure all</button></div>
     </div>
-    <div class="actionrow"><button id="measure-all" class="primary">Measure all</button></div>
-    <div id="measure-out-batch" class="block"></div>
-    <div class="rowend"><button class="back">Back</button>
+    <div id="measure-out-batch"></div>
+    <div class="foot"><button class="back">Back</button>
       <button id="to-analyze" class="primary hidden">Continue to Analysis</button></div>`;
 
   $("#to-analyze").onclick = () => { Flow.enable("analyze"); Flow.go("analyze"); };
@@ -1629,7 +1667,7 @@ function buildCompareUI(channels, conditions, metrics) {
   const mkOn = channels.some(m => !isNuc(m)) ? (m) => !isNuc(m) : () => true;
 
   box.innerHTML = `
-    <div class="panel-head"><h2>Analysis</h2>
+    <div class="panel-head"><div class="ph-text"><h2>Analysis</h2><p class="desc">Conditions compared per marker, co-expression of two markers, and positivity against a control.</p></div>
       <span class="meta">${conditions.length} conditions &middot; ${channels.length} markers</span></div>
 
     <p class="note">Descriptive only: objects and fields are not independent samples.${infoTip("Each condition pools all objects from all its fields. Statistical tests need one value per biological replicate (an independent sample or experiment).")}</p>
@@ -1701,7 +1739,7 @@ function buildCompareUI(channels, conditions, metrics) {
       </div>
     </div>
 
-    <div class="rowend"><button class="back">Back</button></div>`;
+    <div class="foot"><button class="back">Back</button></div>`;
 
   box.querySelectorAll(".tab").forEach(t => t.onclick = () => {
     box.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === t));
@@ -1727,7 +1765,7 @@ function buildCompareUI(channels, conditions, metrics) {
     const r = await (await fetch("/api/batch/plot", { method: "POST", body: fd })).json();
     if (r.error) { $("#cmp-fig").innerHTML = `<p class="flag">${esc(r.error)}</p>`; $("#cmp-dl").innerHTML = ""; return; }
     $("#cmp-fig").innerHTML = `<img class="cmpimg" src="${r.figure}" alt="">`;
-    $("#cmp-dl").innerHTML = `<a class="btn" download="comparison.png" href="${r.figure}">Download plot</a> <button class="savefig">Save to folder</button>`;
+    $("#cmp-dl").innerHTML = `<a class="btn sm" download="comparison.png" href="${r.figure}">Download plot</a> <button class="savefig sm">Save to folder</button>`;
     { const sv = $("#cmp-dl .savefig"); if (sv) sv.onclick = () => saveClick(sv, "comparison.png", r.figure, true); }
     const im = $("#cmp-fig .cmpimg"); if (im) im.onclick = () => openLightbox(im.src);
   };
@@ -1761,7 +1799,7 @@ function buildCompareUI(channels, conditions, metrics) {
     const r = await (await fetch("/api/batch/scatter", { method: "POST", body: fd })).json();
     if (r.error) { $("#sc-fig").innerHTML = `<p class="flag">${esc(r.error)}</p>`; $("#sc-dl").innerHTML = ""; return; }
     $("#sc-fig").innerHTML = `<img class="cmpimg" src="${r.figure}" alt="">`;
-    $("#sc-dl").innerHTML = `<a class="btn" download="scatter.png" href="${r.figure}">Download plot</a> <button class="savefig">Save to folder</button>`;
+    $("#sc-dl").innerHTML = `<a class="btn sm" download="scatter.png" href="${r.figure}">Download plot</a> <button class="savefig sm">Save to folder</button>`;
     { const sv = $("#sc-dl .savefig"); if (sv) sv.onclick = () => saveClick(sv, "scatter.png", r.figure, true); }
     const im = $("#sc-fig .cmpimg"); if (im) im.onclick = () => openLightbox(im.src);
   };
@@ -1835,12 +1873,12 @@ function buildCompareUI(channels, conditions, metrics) {
       });
       t += `</tbody></table>`;
     }
-    t += `<div style="margin-top:16px"><img class="cmpimg" src="${r.figure}" alt=""></div>
-          <div class="actionrow"><a class="btn" download="positivity.png" href="${r.figure}">Download plot</a>
-          <button class="savefig">Save plot to folder</button>
-          <button class="dlcell">Download per-object CSV (${r.n_cells} objects)</button>
-          <button class="savecell">Save CSV to folder</button>
-          ${r.run_parameters ? `<button class="dlposparams">Download parameters</button>` : ""}</div>`;
+    t += `<div class="pos-fig"><img class="cmpimg" src="${r.figure}" alt=""></div>
+          <div class="actionrow"><a class="btn sm" download="positivity.png" href="${r.figure}">Download plot</a>
+          <button class="savefig sm">Save plot to folder</button>
+          <button class="dlcell sm">Download per-object CSV (${r.n_cells} objects)</button>
+          <button class="savecell sm">Save CSV to folder</button>
+          ${r.run_parameters ? `<button class="dlposparams sm">Download parameters</button>` : ""}</div>`;
     $("#pos-out").innerHTML = t;
     const im = $("#pos-out .cmpimg"); if (im) im.onclick = () => openLightbox(im.src);
     const dl = $("#pos-out .dlcell"); if (dl) dl.onclick = () => downloadText("cells_positive.csv", r.cell_csv);
@@ -1877,6 +1915,8 @@ fetch("/api/device").then(r => r.json()).then(d => {
   const chip = $("#device-chip");
   chip.classList.remove("hidden");
   chip.textContent = d.gpu ? `GPU ${String(d.device || "").toUpperCase()}` : "CPU";
+  { const e = $("#env-device"); if (e) e.textContent = d.gpu ? `GPU (${String(d.device || "").toUpperCase()})` : "CPU only: Cellpose-SAM is slow";
+    const s = $("#env-stardist"); if (s) s.textContent = d.stardist ? "Installed" : "Not installed"; }
   DEVICE_LABEL = chip.textContent;
   chip.classList.toggle("cpu", !d.gpu);
   chip.title = d.gpu ? "Cellpose-SAM runs on the GPU" : "No GPU found: Cellpose-SAM runs on the CPU, which is slow.";
@@ -1888,7 +1928,7 @@ fetch("/api/device").then(r => r.json()).then(d => {
 
 // ---- Display viewer: per-channel colour, brightness/contrast, segmentation overlay ----
 const Viewer = (() => {
-  let LIST = [], IDX = 0, TOKEN = null, HASM = false;
+  let LIST = [], IDX = 0, TOKEN = null, HASM = false, LABELS = null;
   let NAMES = [], COLORS = [], VIS = [], RANGES = [], HISTS = [];
   // saturated display colours: dim fluorophore colours wash out on a black stage
   const PALETTE = ["#00a2ff", "#02f26e", "#ff2e63", "#dd00fa", "#ffb300", "#00e5d0"];
@@ -1901,8 +1941,9 @@ const Viewer = (() => {
     : /^blue$/i.test(n) ? "#00a2ff" : null;
   const hexRgb = (h) => { const x = h.replace("#", ""); return [parseInt(x.slice(0, 2), 16), parseInt(x.slice(2, 4), 16), parseInt(x.slice(4, 6), 16)]; };
 
-  function open(list, index, hasMasks) {
-    LIST = list || []; IDX = index || 0; HASM = !!hasMasks;
+  // labels: channel names typed in the interface (by channel index); colours still follow the file names
+  function open(list, index, hasMasks, labels) {
+    LIST = list || []; IDX = index || 0; HASM = !!hasMasks; LABELS = labels || null;
     $("#viewer").classList.add("show");
     loadCurrent();
   }
@@ -1919,8 +1960,8 @@ const Viewer = (() => {
     let d = {};
     try { d = await (await fetch("/api/field_hist", { method: "POST", body: fd })).json(); } catch (e) { }
     HISTS = d.hists || [];
-    NAMES = HISTS.map(h => h.name);
-    COLORS = NAMES.map((n, i) => natColor(n) || PALETTE[i % PALETTE.length]);
+    NAMES = HISTS.map((h, i) => (LABELS && LABELS[i]) || h.name);
+    COLORS = HISTS.map((h, i) => natColor(h.name) || natColor(NAMES[i]) || PALETTE[i % PALETTE.length]);
     VIS = NAMES.map(() => true);
     RANGES = HISTS.map(h => [h.lo, h.hi]);
     renderSide();
@@ -2010,8 +2051,9 @@ function recomputeSummary() {
   }
   let h = "";
   for (const [cond, r] of map)
-    h += `<span class="chip ${r.control ? "control" : ""}">${esc(cond)}<span class="c">${r.n} image${r.n > 1 ? "s" : ""}${r.control ? " &middot; control" : ""}</span></span>`;
-  $("#condsummary").innerHTML = h || `<span class="meta">No conditions yet</span>`;
+    h += `<div class="cond-cell${r.control ? " control" : ""}"><span class="cn">${esc(cond)}</span>`
+       + `<span class="cc">${r.n} image${r.n > 1 ? "s" : ""}${r.control ? ", control" : ""}</span></div>`;
+  $("#condsummary").innerHTML = h ? `<div class="cond-grid">${h}</div>` : `<span class="meta">No conditions yet</span>`;
 }
 </script>
 </body>
