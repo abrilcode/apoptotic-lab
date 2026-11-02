@@ -7,7 +7,21 @@
 <link rel="icon" href="/static/brand/favicon.png?v=2" type="image/png" sizes="256x256">
 <link rel="apple-touch-icon" href="/static/brand/apple-touch-icon.png?v=2">
 <link rel="preload" href="/static/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/static/app.css?v=14">
+<link rel="stylesheet" href="/static/app.css?v=15">
+<script>
+// Where the engine (the Python server that segments and measures) is. When the engine serves this
+// page itself, API is "" (same address). When the page is hosted (https, e.g. on Vercel), the
+// engine runs on this computer at http://127.0.0.1:8010; ?engine=<url> points elsewhere and is
+// remembered in this browser.
+window.API = (() => {
+  const q = new URLSearchParams(location.search).get("engine");
+  let saved = null;
+  try { if (q) localStorage.setItem("engine", q); saved = localStorage.getItem("engine"); } catch (e) {}
+  if (location.protocol !== "https:" && !q) return "";
+  return (q || saved || "http://127.0.0.1:8010").replace(/\/$/, "");
+})();
+window.HOSTED = window.API !== "";
+</script>
 </head>
 <body>
 
@@ -301,10 +315,84 @@
 </div>
 
 <div id="lightbox"><img alt=""></div>
+
+<div id="engine" class="hidden" role="dialog" aria-modal="true" aria-labelledby="engine-title">
+  <div class="engine-card">
+    <h2 id="engine-title">Start the engine on this computer</h2>
+    <p class="engine-lead">apoptotic-lab runs its analysis on your own computer, so images never leave it.
+      This page could not reach the engine at <code id="engine-url"></code>.</p>
+    <div class="engine-old hidden"><p><b>Your engine is older than this page.</b> Update it, then start it again:</p>
+      <pre><code>cd apoptotic-lab
+git pull
+pip install -r requirements.txt</code></pre></div>
+    <div class="engine-tabs" role="tablist">
+      <button class="sm on" data-os="mac" role="tab">macOS and Linux</button>
+      <button class="sm" data-os="win" role="tab">Windows</button>
+    </div>
+    <div class="engine-os" data-os="mac">
+      <p class="meta">First time (Python 3.10 to 3.12 and Git installed)</p>
+      <pre><code>git clone https://github.com/abrilcode/apoptotic-lab.git
+cd apoptotic-lab
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt</code></pre>
+      <p class="meta">Every time</p>
+      <pre><code>cd apoptotic-lab && source .venv/bin/activate
+uvicorn app:app --host 127.0.0.1 --port 8010</code></pre>
+    </div>
+    <div class="engine-os hidden" data-os="win">
+      <p class="meta">First time, in PowerShell (Python 3.10 to 3.12 and Git installed)</p>
+      <pre><code>git clone https://github.com/abrilcode/apoptotic-lab.git
+cd apoptotic-lab
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt</code></pre>
+      <p class="meta">Every time</p>
+      <pre><code>cd apoptotic-lab; .venv\Scripts\Activate.ps1
+uvicorn app:app --host 127.0.0.1 --port 8010</code></pre>
+    </div>
+    <p class="note">Leave that window open while you work. If the browser asks whether this site may
+      access apps or devices on your network, choose <b>Allow</b>. Details and GPU setup are in the
+      <a href="https://github.com/abrilcode/apoptotic-lab#installation" target="_blank" rel="noopener">README</a>.</p>
+    <div class="engine-foot"><span class="meta" id="engine-status"></span><button id="engine-retry" class="primary">Try again</button></div>
+  </div>
+</div>
 <script src="/static/editor.js?v=10"></script>
 
 <script>
 const $ = s => document.querySelector(s);
+
+// Hosted interface: check that the engine on this computer answers and is recent enough; if not,
+// show how to install and start it. Checked again with "Try again" and every 5 s while shown.
+const ENGINE_VERSION = 1;
+function checkEngine() {
+  return fetch(API + "/api/device").then(r => r.json()).then(d => (d.engine || 0) >= ENGINE_VERSION ? "ok" : "old")
+    .catch(() => "missing");
+}
+function engineScreen(state) {
+  const box = $("#engine");
+  box.classList.toggle("hidden", state === "ok");
+  box.querySelector(".engine-old").classList.toggle("hidden", state !== "old");
+  $("#engine-url").textContent = API;
+  $("#engine-status").textContent = state === "ok" ? "" : (state === "old" ? "Engine found, but out of date" : "Engine not found");
+}
+if (window.HOSTED) {
+  const poll = () => checkEngine().then(st => { engineScreen(st); if (st === "ok") location.reload(); });
+  checkEngine().then(st => {
+    if (st === "ok") return;
+    engineScreen(st);
+    const t = setInterval(() => checkEngine().then(s2 => { if (s2 === "ok") { clearInterval(t); location.reload(); } else engineScreen(s2); }), 5000);
+  });
+  document.addEventListener("click", e => {
+    if (e.target.id === "engine-retry") { $("#engine-status").textContent = "Checking"; poll(); }
+    const tab = e.target.closest(".engine-tabs [data-os]");
+    if (tab) {
+      document.querySelectorAll(".engine-tabs [data-os]").forEach(b => b.classList.toggle("on", b === tab));
+      document.querySelectorAll(".engine-os").forEach(d => d.classList.toggle("hidden", d.dataset.os !== tab.dataset.os));
+    }
+  });
+  if (/Win/.test(navigator.platform)) setTimeout(() => document.querySelector('.engine-tabs [data-os="win"]').click(), 0);
+}
 const ALLOWED = [".czi", ".tif", ".tiff", ".png", ".jpg", ".jpeg"];
 const extOf = n => { const i = n.lastIndexOf("."); return i < 0 ? "" : n.slice(i).toLowerCase(); };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
@@ -427,7 +515,7 @@ function paramsText(rec) { return JSON.stringify(rec, null, 2); }
 // Final label masks (after any manual edits): one TIFF for one image, a ZIP for several.
 async function downloadMasks(items) {
   const fd = new FormData(); fd.append("items", JSON.stringify(items));
-  const resp = await fetch("/api/masks", { method: "POST", body: fd });
+  const resp = await fetch(API + "/api/masks", { method: "POST", body: fd });
   if (!resp.ok) { let msg = "Could not download the masks."; try { msg = (await resp.json()).error || msg; } catch (e) {} alert(msg); return; }
   const blob = await resp.blob();
   const cd = resp.headers.get("Content-Disposition") || "";
@@ -547,7 +635,7 @@ function paletteOpts() {
   });
   return out + (group !== null ? `</optgroup>` : "");
 }
-fetch("/api/palettes").then(r => r.json()).then(d => {
+fetch(API + "/api/palettes").then(r => r.json()).then(d => {
   if (d.palettes && d.palettes.length) PALETTES = d.palettes;
   if (d.default) PALETTE_DEFAULT = d.default;
 }).catch(() => {});
@@ -602,7 +690,7 @@ function renderMeasure(sel, r, filename, maskItems) {
         fd.append("columns", JSON.stringify(r.columns));
         fd.append("sort_by", JSON.stringify([st.by]));
         fd.append("desc", st.desc ? "true" : "false");
-        const rr = await (await fetch("/api/measure_table", { method: "POST", body: fd })).json();
+        const rr = await (await fetch(API + "/api/measure_table", { method: "POST", body: fd })).json();
         if (!rr.error) { st.preview = rr.preview; st.csv = rr.csv; }
         draw();
       };
@@ -624,7 +712,7 @@ function edgeLine(e) {
 // Switch the edge rule for one segmented image; returns the server response (overlay, counts).
 async function setEdgeRule(token, exclude) {
   const fd = new FormData(); fd.append("token", token); fd.append("exclude_edge", exclude ? "true" : "false");
-  return (await fetch("/api/single/edge", { method: "POST", body: fd })).json();
+  return (await fetch(API + "/api/single/edge", { method: "POST", body: fd })).json();
 }
 
 function showEdgeSummary(sel, r) {
@@ -704,7 +792,7 @@ function singlePlotPanel(r) {
     fd.append("palette", $("#single-palette").value);
     fd.append("x", "condition");
     fd.append("log2", $("#single-log2").checked ? "true" : "false");
-    const pr = await (await fetch("/api/batch/plot", { method: "POST", body: fd })).json();
+    const pr = await (await fetch(API + "/api/batch/plot", { method: "POST", body: fd })).json();
     if (pr.error) { $("#single-fig").innerHTML = `<p class="flag">${esc(pr.error)}</p>`; $("#single-dl").innerHTML = ""; return; }
     $("#single-fig").innerHTML = `<img class="cmpimg" src="${pr.figure}" alt="">`;
     $("#single-dl").innerHTML = `<a class="btn sm" download="distributions.png" href="${pr.figure}">Download plot</a> <button class="savefig sm">Save to folder</button>`;
@@ -772,7 +860,7 @@ $("#go").addEventListener("click", async () => {
   $("#busy").classList.remove("hidden");
   $("#upmsg").innerHTML = "";
   try {
-    const data = await (await fetch("/api/single/inspect", { method: "POST", body: fd })).json();
+    const data = await (await fetch(API + "/api/single/inspect", { method: "POST", body: fd })).json();
     handle(data, skipped);
   } catch (e) {
     $("#upmsg").innerHTML = `<p class="rejected">Request failed: ${esc(e)}</p>`;
@@ -886,7 +974,7 @@ function buildControls(f, rejected, skipped) {
     fd.append("subtract_bg", $("#bg-sub-single").checked ? "true" : "false");
     fd.append("pixel_size_um", $("#px-single").disabled ? "" : $("#px-single").value.trim());
     fd.append("exclude_edge", $("#edge-single").checked ? "true" : "false");
-    const r = await (await fetch("/api/single/measure", { method: "POST", body: fd })).json();
+    const r = await (await fetch(API + "/api/single/measure", { method: "POST", body: fd })).json();
     if (r.error) { $("#measure-out").innerHTML = `<p class="flag">${esc(r.error)}</p>`; return; }
     $("#measure-meta").textContent = r.channels ? `${r.channels.length} channels` : "";
     renderMeasure("#measure-out", r, "measurements.csv", [{ token: SINGLE_TOKEN, image: SINGLE_NAME }]);
@@ -935,7 +1023,7 @@ function buildControls(f, rejected, skipped) {
     fd.append("engine", engine);
     fd.append("exclude_edge", $("#edge-single").checked ? "true" : "false");
     try {
-      const r = await (await fetch("/api/single/segment", { method: "POST", body: fd })).json();
+      const r = await (await fetch(API + "/api/single/segment", { method: "POST", body: fd })).json();
       clearInterval(timer);
       if (r.error) { $("#msgs").innerHTML = `<div class="flag">${esc(r.error)}</div>`; return; }
       const secs = fmtSecs((performance.now() - t0) / 1000);
@@ -1101,7 +1189,7 @@ async function addImages() {
   for (const f of allowed) fd.append("files", f, f.name);
   $("#maddbusy").classList.remove("hidden");
   try {
-    const data = await (await fetch("/api/batch/inspect", { method: "POST", body: fd })).json();
+    const data = await (await fetch(API + "/api/batch/inspect", { method: "POST", body: fd })).json();
     if (data.blocked) { $("#maddmsg").innerHTML = `<p class="rejected">${esc(data.error)}</p>`; return; }
     const newFields = data.fields || [];
     newFields.forEach(f => f.__token = data.token || null);
@@ -1147,7 +1235,7 @@ function openInspector(idx) {
   $("#insp-img").src = f.thumbnail || "";
 
   const fd = new FormData(); fd.append("token", f.__token || ""); fd.append("key", f.key);
-  fetch("/api/batch/preview", { method: "POST", body: fd })
+  fetch(API + "/api/batch/preview", { method: "POST", body: fd })
     .then(r => r.json())
     .then(d => {
       if (!$("#inspector").classList.contains("show")) return;
@@ -1199,7 +1287,7 @@ function cxOpen(idx) {
   $("#cx-views").innerHTML = loadingHTML("Loading channels");
   $("#cx-img").src = f.thumbnail || "";
   const fd = new FormData(); fd.append("token", f.__token || ""); fd.append("key", f.key);
-  fetch("/api/batch/preview", { method: "POST", body: fd })
+  fetch(API + "/api/batch/preview", { method: "POST", body: fd })
     .then(r => r.json())
     .then(d => {
       if (!$("#cx-views")) return;
@@ -1237,7 +1325,7 @@ $("#mgo").addEventListener("click", async () => {
   $("#mbusy").classList.remove("hidden");
   $("#mupmsg").innerHTML = "";
   try {
-    const data = await (await fetch("/api/batch/inspect", { method: "POST", body: fd })).json();
+    const data = await (await fetch(API + "/api/batch/inspect", { method: "POST", body: fd })).json();
     renderBatch(data, skipped);
   } catch (e) {
     $("#mupmsg").innerHTML = `<p class="rejected">Request failed: ${esc(e)}</p>`;
@@ -1538,7 +1626,7 @@ async function segmentAllBatch() {
       fd.append("channel", SEG_CHANNEL); fd.append("type", segType); fd.append("diameter", "");
       fd.append("engine", SEG_ENGINE);
       fd.append("exclude_edge", EDGE_EXCLUDE ? "true" : "false");
-      const r = await (await fetch("/api/batch/segment_one", { method: "POST", body: fd })).json();
+      const r = await (await fetch(API + "/api/batch/segment_one", { method: "POST", body: fd })).json();
       if (r.error) { clearInterval(timer); segBar(done, N, false); $("#segprogress").innerHTML = `<span class="flag">${esc(f.key)}: ${esc(r.error)}</span>`; btn.disabled = false; return; }
       BSEG.push({ key: f.key, token: r.token, count: r.count, overlay: r.overlay, edge: r.edge,
                   condition: f.condition, replicate: f.replicate, control: f.control,
@@ -1644,7 +1732,7 @@ function renderMeasurePanel() {
     fd.append("exclude_edge", EDGE_EXCLUDE ? "true" : "false");
     fd.append("measurements", JSON.stringify(MEAS_SEL));
     fd.append("channel_names", JSON.stringify(CHANNEL_LABELS || []));
-    const r = await (await fetch("/api/batch/measure", { method: "POST", body: fd })).json();
+    const r = await (await fetch(API + "/api/batch/measure", { method: "POST", body: fd })).json();
     if (r.error) { $("#measure-out-batch").innerHTML = `<p class="flag">${esc(r.error)}</p>`; return; }
     RESULT_TOKEN = r.result_token || null;
     renderMeasure("#measure-out-batch", r, "measurements.csv", BSEG.map(s => ({ token: s.token, image: s.key })));
@@ -1766,7 +1854,7 @@ function buildCompareUI(channels, conditions, metrics) {
     fd.append("conditions", JSON.stringify(conds()));
     fd.append("markers", JSON.stringify(mks()));
     fd.append("focus_condition", $("#cmp-focus") ? $("#cmp-focus").value : "");
-    const r = await (await fetch("/api/batch/plot", { method: "POST", body: fd })).json();
+    const r = await (await fetch(API + "/api/batch/plot", { method: "POST", body: fd })).json();
     if (r.error) { $("#cmp-fig").innerHTML = `<p class="flag">${esc(r.error)}</p>`; $("#cmp-dl").innerHTML = ""; return; }
     $("#cmp-fig").innerHTML = `<img class="cmpimg" src="${r.figure}" alt="">`;
     $("#cmp-dl").innerHTML = `<a class="btn sm" download="comparison.png" href="${r.figure}">Download plot</a> <button class="savefig sm">Save to folder</button>`;
@@ -1800,7 +1888,7 @@ function buildCompareUI(channels, conditions, metrics) {
     fd.append("x_thr", $("#sc-xthr").value);
     fd.append("y_thr", $("#sc-ythr").value);
     fd.append("palette", $("#cmp-palette") ? $("#cmp-palette").value : "fresh");
-    const r = await (await fetch("/api/batch/scatter", { method: "POST", body: fd })).json();
+    const r = await (await fetch(API + "/api/batch/scatter", { method: "POST", body: fd })).json();
     if (r.error) { $("#sc-fig").innerHTML = `<p class="flag">${esc(r.error)}</p>`; $("#sc-dl").innerHTML = ""; return; }
     $("#sc-fig").innerHTML = `<img class="cmpimg" src="${r.figure}" alt="">`;
     $("#sc-dl").innerHTML = `<a class="btn sm" download="scatter.png" href="${r.figure}">Download plot</a> <button class="savefig sm">Save to folder</button>`;
@@ -1840,7 +1928,7 @@ function buildCompareUI(channels, conditions, metrics) {
     fd.append("absolute", $("#pos-abs").value);
     fd.append("palette", $("#cmp-palette") ? $("#cmp-palette").value : "vivid");
     if (!allMarkers) fd.append("channel", $("#pos-ch").value);
-    const url = allMarkers ? "/api/batch/positivity_all" : "/api/batch/positivity";
+    const url = API + (allMarkers ? "/api/batch/positivity_all" : "/api/batch/positivity");
     const r = await (await fetch(url, { method: "POST", body: fd })).json();
     if (r.error) { $("#pos-out").innerHTML = `<p class="flag">${esc(r.error)}</p>`; return; }
 
@@ -1907,14 +1995,14 @@ function buildCompareUI(channels, conditions, metrics) {
 }
 
 // load the Set Measurements options once
-fetch("/api/measurements").then(r => r.json()).then(d => {
+fetch(API + "/api/measurements").then(r => r.json()).then(d => {
   MEAS_OPTIONS = d.measurements || [];
   if (BSEG.length && !document.querySelector("#meas-set .measopt")) renderMeasurePanel();
   const ms = $("#meas-set-single"); if (ms && FIELD && !ms.querySelector(".measopt")) ms.innerHTML = measChecklist();
 }).catch(() => {});
 
 // Cellpose speed depends on GPU vs CPU. Shown once, in the header.
-fetch("/api/device").then(r => r.json()).then(d => {
+fetch(API + "/api/device").then(r => r.json()).then(d => {
   GPU_OK = !!d.gpu;
   const chip = $("#device-chip");
   chip.classList.remove("hidden");
@@ -1962,7 +2050,7 @@ const Viewer = (() => {
     $("#vw-channels").innerHTML = loadingHTML("Loading channels");
     const fd = new FormData(); fd.append("token", TOKEN);
     let d = {};
-    try { d = await (await fetch("/api/field_hist", { method: "POST", body: fd })).json(); } catch (e) { }
+    try { d = await (await fetch(API + "/api/field_hist", { method: "POST", body: fd })).json(); } catch (e) { }
     HISTS = d.hists || [];
     NAMES = HISTS.map((h, i) => (LABELS && LABELS[i]) || h.name);
     COLORS = HISTS.map((h, i) => natColor(h.name) || natColor(NAMES[i]) || PALETTE[i % PALETTE.length]);
@@ -2033,7 +2121,7 @@ const Viewer = (() => {
     $("#vw-img").style.opacity = .55;
     const fd = new FormData(); fd.append("token", TOKEN);
     fd.append("spec", JSON.stringify({ colors: COLORS.map(hexRgb), visible: VIS, ranges: RANGES, seg }));
-    const r = await (await fetch("/api/render", { method: "POST", body: fd })).json();
+    const r = await (await fetch(API + "/api/render", { method: "POST", body: fd })).json();
     $("#vw-img").style.opacity = 1;
     if (r.error) { $("#vw-img").removeAttribute("src"); return; }
     $("#vw-img").src = r.image;

@@ -53,11 +53,21 @@ that matches the driver before `requirements.txt`. StarDist is optional:
 
 ## Usage
 
+Start the engine and leave its window open:
+
 ```bash
 uvicorn app:app --host 127.0.0.1 --port 8010
 ```
 
-Open http://127.0.0.1:8010 and choose a flow.
+Then open the interface, either:
+
+- **https://apoptotic-lab.vercel.app** — the hosted interface. It talks to the engine on your
+  computer; images never leave it. If Chrome asks whether the site may access apps or devices on
+  your network, choose **Allow**. Use Chrome or Edge; other browsers may block a website from
+  reaching a program on your own computer.
+- **http://127.0.0.1:8010** — the same interface, served by the engine itself, with no internet.
+
+If the engine is not running, the hosted interface shows how to install and start it.
 
 | Flow | Steps |
 |---|---|

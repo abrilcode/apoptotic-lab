@@ -611,3 +611,29 @@ table.batch .files { margin-top: 2px; font-family: var(--mono); font-size: 11.5p
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* ================================================================ engine screen
+   Hosted interface only: shown over everything while the engine on this computer is not
+   reachable, with the commands to install and start it. */
+#engine {
+  position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-start; justify-content: center;
+  padding: 72px 16px 32px; overflow-y: auto; background: var(--page);
+}
+#engine.hidden { display: none; }
+.engine-card {
+  width: 100%; max-width: 640px; padding: 28px 28px 22px;
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r-lg);
+}
+.engine-card h2 { font-size: 22px; letter-spacing: -.02em; margin-bottom: 8px; }
+.engine-lead { color: var(--fg-2); margin: 0 0 18px; line-height: 1.55; }
+.engine-card pre {
+  margin: 6px 0 14px; padding: 12px 14px; overflow-x: auto;
+  background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--r);
+}
+.engine-card pre code { background: none; border: 0; padding: 0; white-space: pre; font-size: 12.5px; line-height: 1.6; }
+.engine-card .meta { display: block; margin-top: 4px; }
+.engine-tabs { display: flex; gap: 6px; margin: 4px 0 10px; }
+.engine-tabs .on { background: var(--inv-bg); color: var(--inv-fg); border-color: var(--inv-bg); }
+.engine-old { padding: 12px 14px 2px; margin-bottom: 16px; border: 1px solid var(--border-2); border-radius: var(--r); }
+.engine-old p { margin: 0 0 6px; }
+.engine-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }

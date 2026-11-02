@@ -307,6 +307,32 @@ async def no_store(request, call_next):
     return resp
 
 
+# The hosted interface (Vercel) talks to this engine on the user's own computer. Only that
+# interface may call it: the production address and the abril-desk preview deployments.
+# Anything else still works when served by the engine itself (same origin, no CORS needed).
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+
+ENGINE_VERSION = 1      # bump when the API changes in a way the hosted interface must know about
+HOSTED_ORIGINS = r"^https://apoptotic-lab\.vercel\.app$|^https://apoptotic-lab(-[a-z0-9]+)*-abril-desk\.vercel\.app$"
+# Chrome asks before a public site may reach localhost (Private Network Access): the preflight
+# carries Access-Control-Request-Private-Network and needs Access-Control-Allow-Private-Network.
+# Recent Starlette answers it itself (and rejects it unless enabled); older versions ignore it,
+# so the middleware below adds the header there.
+_cors = dict(allow_origin_regex=os.environ.get("APOPTOTIC_LAB_ORIGINS", HOSTED_ORIGINS),
+             allow_methods=["GET", "POST"], allow_headers=["*"], max_age=600)
+if "allow_private_network" in __import__("inspect").signature(CORSMiddleware.__init__).parameters:
+    _cors["allow_private_network"] = True
+app.add_middleware(CORSMiddleware, **_cors)
+
+
+@app.middleware("http")
+async def private_network(request, call_next):
+    resp = await call_next(request)
+    if request.method == "OPTIONS" and request.headers.get("access-control-request-private-network"):
+        resp.headers["Access-Control-Allow-Private-Network"] = "true"
+    return resp
+
+
 async def _save(files: List[UploadFile]) -> List[str]:
     tmp = tempfile.mkdtemp(prefix="pfcv2_upload_")
     paths = []
@@ -623,7 +649,8 @@ def palette_list():
 @app.get("/api/device")
 def device_info():
     d = segment.probe_device()
-    return JSONResponse({"device": d, "gpu": d != "cpu", "stardist": segment.stardist_available()})
+    return JSONResponse({"device": d, "gpu": d != "cpu", "stardist": segment.stardist_available(),
+                         "engine": ENGINE_VERSION})
 
 
 @app.post("/api/measure_table")

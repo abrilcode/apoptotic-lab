@@ -38,7 +38,7 @@
   // ---- load one image into the editor ----
   async function loadImage(token) {
     const fd = new FormData(); fd.append("token", token);
-    const r = await (await fetch("/api/single/editor", { method: "POST", body: fd })).json();
+    const r = await (await fetch(API + "/api/single/editor", { method: "POST", body: fd })).json();
     if (r.error) { alert(r.error); return false; }
     CUR_TOKEN = token;
     W = r.w; H = r.h;
@@ -167,7 +167,7 @@
     }
     g.putImageData(out, 0, 0);
     const fd = new FormData(); fd.append("token", CUR_TOKEN); fd.append("idmap", c.toDataURL("image/png"));
-    const r = await (await fetch("/api/single/commit", { method: "POST", body: fd })).json();
+    const r = await (await fetch(API + "/api/single/commit", { method: "POST", body: fd })).json();
     if (r.error) throw new Error(r.error);
     dirty = false;
     return r;
