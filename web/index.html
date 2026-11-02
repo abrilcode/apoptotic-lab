@@ -7,7 +7,7 @@
 <link rel="icon" href="/static/brand/favicon.png?v=2" type="image/png" sizes="256x256">
 <link rel="apple-touch-icon" href="/static/brand/apple-touch-icon.png?v=2">
 <link rel="preload" href="/static/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/static/app.css?v=17">
+<link rel="stylesheet" href="/static/app.css?v=19">
 <script>
 // Where the engine (the Python server that segments and measures) is. When the engine serves this
 // page itself, API is "" (same address). When the page is hosted (https, e.g. on Vercel), the
@@ -23,7 +23,7 @@ window.API = (() => {
 window.HOSTED = window.API !== "";
 </script>
 </head>
-<body>
+<body class="landing">
 
 <header id="topbar">
   <span class="logo" role="link" tabindex="0" aria-label="apoptotic-lab, back to the start" title="Back to the start"><span class="g" style="--x:0;--w:128"></span><span class="g x" style="--x:128;--w:125;--i:0;--j:9"></span><span class="g x" style="--x:253;--w:132.5;--i:1;--j:8"></span><span class="g x" style="--x:385.5;--w:125;--i:2;--j:7"></span><span class="g x" style="--x:510.5;--w:72.5;--i:3;--j:6"></span><span class="g x" style="--x:583;--w:124.5;--i:4;--j:5"></span><span class="g x" style="--x:707.5;--w:76;--i:5;--j:4"></span><span class="g x" style="--x:783.5;--w:43.5;--i:6;--j:3"></span><span class="g x" style="--x:827;--w:126;--i:7;--j:2"></span><span class="caret c1" aria-hidden="true"></span><span class="g" style="--x:953;--w:385"></span></span>
@@ -41,8 +41,19 @@ window.HOSTED = window.API !== "";
 
 <main id="main" class="no-steps">
 
+  <!-- Landing: install or check the dependencies, then the start page -->
+  <section id="landing">
+    <span class="logo big" id="landing-logo" role="img" aria-label="apoptotic-lab"><span class="g" style="--x:0;--w:128"></span><span class="g x" style="--x:128;--w:125;--i:0;--j:9"></span><span class="g x" style="--x:253;--w:132.5;--i:1;--j:8"></span><span class="g x" style="--x:385.5;--w:125;--i:2;--j:7"></span><span class="g x" style="--x:510.5;--w:72.5;--i:3;--j:6"></span><span class="g x" style="--x:583;--w:124.5;--i:4;--j:5"></span><span class="g x" style="--x:707.5;--w:76;--i:5;--j:4"></span><span class="g x" style="--x:783.5;--w:43.5;--i:6;--j:3"></span><span class="g x" style="--x:827;--w:126;--i:7;--j:2"></span><span class="caret c1" aria-hidden="true"></span><span class="g" style="--x:953;--w:385"></span></span>
+    <p class="landing-sub">Segmentation and quantification of fluorescence microscopy images, on your own computer.</p>
+    <div class="landing-actions">
+      <a class="btn" href="https://github.com/abrilcode/apoptotic-lab#installation" target="_blank" rel="noopener">Install dependencies</a>
+      <button id="check-deps" class="primary">Check dependencies</button>
+    </div>
+    <div id="landing-result" aria-live="polite"></div>
+  </section>
+
   <!-- Start: single image or multiple images -->
-  <section id="choice" class="start">
+  <section id="choice" class="start hidden">
     <div class="hero">
       <h1>New analysis</h1>
       <p class="lead">Segment nuclei, cells or other objects on any channel, measure every channel inside each object, and compare conditions. Images are processed on this computer.</p>
@@ -406,23 +417,53 @@ fetch(API + "/api/deps").then(r => r.json()).then(d => {
   $("#deps-panel").classList.remove("hidden");
 }).catch(() => { const v = $("#env-deps"); if (v) v.textContent = "Could not check"; });
 
-if (window.HOSTED) {
-  const poll = () => checkEngine().then(st => { engineScreen(st); if (st === "ok") location.reload(); });
-  checkEngine().then(st => {
-    if (st === "ok") return;
-    engineScreen(st);
-    const t = setInterval(() => checkEngine().then(s2 => { if (s2 === "ok") { clearInterval(t); location.reload(); } else engineScreen(s2); }), 5000);
-  });
-  document.addEventListener("click", e => {
-    if (e.target.id === "engine-retry") { $("#engine-status").textContent = "Checking"; poll(); }
-    const tab = e.target.closest(".engine-tabs [data-os]");
-    if (tab) {
-      document.querySelectorAll(".engine-tabs [data-os]").forEach(b => b.classList.toggle("on", b === tab));
-      document.querySelectorAll(".engine-os").forEach(d => d.classList.toggle("hidden", d.dataset.os !== tab.dataset.os));
-    }
-  });
-  if (/Win/.test(navigator.platform)) setTimeout(() => document.querySelector('.engine-tabs [data-os="win"]').click(), 0);
+// Landing page: the logo, "Install dependencies" (the installation steps in the repository) and
+// "Check dependencies". The check asks the engine whether it runs and is recent enough
+// (/api/device), then whether every requirement is installed (/api/deps); when everything is in
+// place it continues to the start page. If the engine cannot be reached, the engine screen shows
+// how to install and start it.
+function goStart() {
+  document.body.classList.remove("landing");
+  $("#landing").classList.add("hidden"); $("#choice").classList.remove("hidden");
+  window.scrollTo(0, 0);
 }
+async function runCheck() {
+  const out = $("#landing-result"), btn = $("#check-deps");
+  btn.disabled = true;
+  out.innerHTML = '<p class="meta">Checking the engine and its dependencies</p>';
+  const st = await checkEngine();
+  if (st !== "ok") {
+    btn.disabled = false;
+    out.innerHTML = `<p class="landing-bad">${st === "old" ? "The engine on this computer is out of date." : "The engine is not running on this computer."}</p>`;
+    engineScreen(st); return;
+  }
+  let d;
+  try { d = await (await fetch(API + "/api/deps")).json(); }
+  catch (e) { btn.disabled = false; out.innerHTML = '<p class="landing-bad">Could not check the dependencies.</p>'; return; }
+  const bad = d.packages.filter(p => !p.ok);
+  if (bad.length || !d.python.ok) {
+    btn.disabled = false;
+    const rows = bad.map(p => `<li><code>${esc(p.name)}</code> <span class="meta">${p.installed ? esc(p.installed) + ", needs " + esc(p.required) : "not installed"}</span></li>`);
+    if (!d.python.ok) rows.unshift(`<li><code>python ${esc(d.python.version)}</code> <span class="meta">needs ${esc(d.python.required)}</span></li>`);
+    out.innerHTML = `<p class="landing-bad">${rows.length} to fix</p><ul class="landing-list">${rows.join("")}</ul>`
+      + (bad.length ? `<pre><code>pip install ${bad.map(p => `"${esc(p.name)}${esc(p.required)}"`).join(" ")}</code></pre>` : "")
+      + '<p class="meta">Install them, restart the engine and check again.</p>';
+    return;
+  }
+  out.innerHTML = `<p class="landing-ok">All ${d.packages.length} dependencies installed</p>`;
+  setTimeout(goStart, 900);
+}
+document.addEventListener("click", e => {
+  if (e.target.id === "check-deps") runCheck();
+  if (e.target.id === "engine-retry") { engineScreen("ok"); runCheck(); }
+  const tab = e.target.closest(".engine-tabs [data-os]");
+  if (tab) {
+    document.querySelectorAll(".engine-tabs [data-os]").forEach(b => b.classList.toggle("on", b === tab));
+    document.querySelectorAll(".engine-os").forEach(d => d.classList.toggle("hidden", d.dataset.os !== tab.dataset.os));
+  }
+});
+if (/Win/.test(navigator.platform)) setTimeout(() => document.querySelector('.engine-tabs [data-os="win"]')?.click(), 0);
+setTimeout(() => $("#landing-logo")?.classList.add("play"), 600);
 const ALLOWED = [".czi", ".tif", ".tiff", ".png", ".jpg", ".jpeg"];
 const extOf = n => { const i = n.lastIndexOf("."); return i < 0 ? "" : n.slice(i).toLowerCase(); };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
