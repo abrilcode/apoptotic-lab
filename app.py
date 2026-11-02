@@ -312,7 +312,7 @@ async def no_store(request, call_next):
 # Anything else still works when served by the engine itself (same origin, no CORS needed).
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
-ENGINE_VERSION = 1      # bump when the API changes in a way the hosted interface must know about
+ENGINE_VERSION = 2      # bump when the API changes in a way the hosted interface must know about
 HOSTED_ORIGINS = r"^https://apoptotic-lab\.vercel\.app$|^https://apoptotic-lab(-[a-z0-9]+)*-abril-desk\.vercel\.app$"
 # Chrome asks before a public site may reach localhost (Private Network Access): the preflight
 # carries Access-Control-Request-Private-Network and needs Access-Control-Allow-Private-Network.
@@ -651,6 +651,50 @@ def device_info():
     d = segment.probe_device()
     return JSONResponse({"device": d, "gpu": d != "cpu", "stardist": segment.stardist_available(),
                          "engine": ENGINE_VERSION})
+
+
+def _requirements(path):
+    """The requirement lines of requirements.txt, without comments or blank lines."""
+    out = []
+    for line in open(path, encoding="utf-8"):
+        line = line.split("#", 1)[0].strip()
+        if line:
+            out.append(line)
+    return out
+
+
+@app.get("/api/deps")
+def deps_info():
+    """Setup check for the start page: every package in requirements.txt installed at a version
+    that satisfies it, the Python version, the optional StarDist engine and whether the
+    Cellpose-SAM weights are already downloaded (otherwise they download on first use)."""
+    from importlib import metadata
+    try:
+        from packaging.requirements import Requirement
+    except Exception:          # packaging missing: check presence only
+        Requirement = None
+    pkgs = []
+    for line in _requirements(os.path.join(os.path.dirname(__file__), "requirements.txt")):
+        if Requirement:
+            r = Requirement(line); name, spec = r.name, r.specifier
+        else:
+            name, spec = line.split(">")[0].split("=")[0].split("<")[0].strip(), None
+        try:
+            have = metadata.version(name)
+        except metadata.PackageNotFoundError:
+            have = None
+        ok = have is not None and (spec is None or spec.contains(have, prereleases=True))
+        pkgs.append({"name": name, "required": str(spec or ""), "installed": have, "ok": bool(ok)})
+    py = sys.version_info
+    python = {"version": f"{py.major}.{py.minor}.{py.micro}", "required": "3.10 to 3.12",
+              "ok": (3, 10) <= (py.major, py.minor) <= (3, 12)}
+    models_dir = os.environ.get("CELLPOSE_LOCAL_MODELS_PATH") or os.path.expanduser("~/.cellpose/models")
+    weights = os.path.exists(os.path.join(models_dir, "cpsam_v2"))
+    missing = [p for p in pkgs if not p["ok"]]
+    return JSONResponse({"ok": not missing and python["ok"], "packages": pkgs, "missing": len(missing),
+                         "python": python, "stardist": segment.stardist_available(),
+                         "cellpose_weights": weights,
+                         "repo": "https://github.com/abrilcode/apoptotic-lab#installation"})
 
 
 @app.post("/api/measure_table")
