@@ -113,7 +113,8 @@ code {
    a mask, so it takes the text colour in both themes. At rest only "a" and "-lab" show. On hover
    it types like a terminal: a caret appears after "a" and "poptotic" is typed in one letter per
    step, pushing "-lab" right; the caret goes once the word is done. On leave the
-   letters are deleted in reverse, like backspacing. */
+   letters are deleted in reverse, like backspacing. Only on the start page (#main.no-steps); on
+   the workflow pages the logo stays a static a-lab. */
 .logo {
   --lh: 24px; --u: calc(var(--lh) / 218);
   --step: 65ms; --lead: 90ms;
@@ -132,7 +133,7 @@ code {
   width: 0;
   transition: width 0s linear calc(var(--j) * 28ms);
 }
-.logo:hover .x {
+body:has(#main.no-steps) .logo:hover .x {
   width: calc(var(--w) * var(--u));
   transition-delay: calc(var(--lead) + var(--i) * var(--step));
 }
@@ -147,7 +148,7 @@ code {
   width: calc(90 * var(--u)); height: calc(210 * var(--u));
   background: #FFFFFF; mix-blend-mode: difference;
 }
-.logo:hover .c1 { animation: logo-caret-type calc(var(--lead) + 8 * var(--step)) steps(1) forwards; }
+body:has(#main.no-steps) .logo:hover .c1 { animation: logo-caret-type calc(var(--lead) + 8 * var(--step)) steps(1) forwards; }
 @keyframes logo-caret-type { 0% { visibility: visible; } 100% { visibility: hidden; } }
 .crumb-sep { color: var(--border-3); font-size: 18px; font-weight: 300; margin: 0 2px; }
 .crumb { font-size: 14px; color: var(--fg-2); white-space: nowrap; }
