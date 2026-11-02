@@ -7,12 +7,12 @@
 <link rel="icon" href="/static/brand/favicon.png?v=2" type="image/png" sizes="256x256">
 <link rel="apple-touch-icon" href="/static/brand/apple-touch-icon.png?v=2">
 <link rel="preload" href="/static/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/static/app.css?v=12">
+<link rel="stylesheet" href="/static/app.css?v=13">
 </head>
 <body>
 
 <header id="topbar">
-  <span class="logo" role="img" aria-label="apoptotic-lab"><span class="g" style="--x:0;--w:128"></span><span class="g x" style="--x:128;--w:125;--i:0;--j:9"></span><span class="g x" style="--x:253;--w:132.5;--i:1;--j:8"></span><span class="g x" style="--x:385.5;--w:125;--i:2;--j:7"></span><span class="g x" style="--x:510.5;--w:72.5;--i:3;--j:6"></span><span class="g x" style="--x:583;--w:124.5;--i:4;--j:5"></span><span class="g x" style="--x:707.5;--w:76;--i:5;--j:4"></span><span class="g x" style="--x:783.5;--w:43.5;--i:6;--j:3"></span><span class="g x" style="--x:827;--w:126;--i:7;--j:2"></span><span class="caret c1" aria-hidden="true"></span><span class="g" style="--x:953;--w:385"></span></span>
+  <span class="logo" role="link" tabindex="0" aria-label="apoptotic-lab, back to the start" title="Back to the start"><span class="g" style="--x:0;--w:128"></span><span class="g x" style="--x:128;--w:125;--i:0;--j:9"></span><span class="g x" style="--x:253;--w:132.5;--i:1;--j:8"></span><span class="g x" style="--x:385.5;--w:125;--i:2;--j:7"></span><span class="g x" style="--x:510.5;--w:72.5;--i:3;--j:6"></span><span class="g x" style="--x:583;--w:124.5;--i:4;--j:5"></span><span class="g x" style="--x:707.5;--w:76;--i:5;--j:4"></span><span class="g x" style="--x:783.5;--w:43.5;--i:6;--j:3"></span><span class="g x" style="--x:827;--w:126;--i:7;--j:2"></span><span class="caret c1" aria-hidden="true"></span><span class="g" style="--x:953;--w:385"></span></span>
   <span class="crumb-sep" aria-hidden="true">/</span>
   <span id="crumb" class="crumb"></span>
   <span class="spacer"></span>
@@ -735,6 +735,9 @@ $("#restart").onclick = () => {
   $("#choice").classList.remove("hidden");
   Flow.stop();
 };
+// The logo goes back to the start page, as "New analysis" does.
+$(".logo").onclick = () => $("#restart").onclick();
+$(".logo").onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#restart").onclick(); } };
 
 function toUploader() {
   FIELD = null; SINGLE_TOKEN = null; SEG_OVERLAY = null;
