@@ -1,5 +1,5 @@
 """
-CelloType backend: FastAPI endpoints for the Single image and Multiple images flows (inspect,
+apoptotic-lab backend: FastAPI endpoints for the Single image and Multiple images flows (inspect,
 segment, edit masks, measure, plots, positivity, display rendering, mask export). GET / serves
 the interface in web/.
 

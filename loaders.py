@@ -104,7 +104,7 @@ _AXIS_NAMES = {"Z": ("Z plane", "Z planes"), "T": ("time point", "time points"),
 def plane_warning(axis: str, n: int, used: int) -> str:
     """Plain-language warning for an axis with n planes of which one (index `used`) is kept."""
     one, many = _AXIS_NAMES.get(axis, (f"plane along axis {axis}", f"planes along axis {axis}"))
-    msg = (f"This file has {n} {many}. CelloType analyses one 2D plane: {one} {used + 1} of {n} "
+    msg = (f"This file has {n} {many}. apoptotic-lab analyses one 2D plane: {one} {used + 1} of {n} "
            f"(index {used}) is used")
     if axis == "Z":
         msg += "; it may not be the in-focus plane."
@@ -136,7 +136,7 @@ def _load_czi(path: str, plane: dict = None) -> LoadedImage:
     sizes, start = _czi_sizes(czi)
     if sizes.get("M", 1) > 1:
         raise LoadError(
-            f"This CZI is a tile scan (mosaic) of {sizes['M']} tiles. CelloType analyses one field of "
+            f"This CZI is a tile scan (mosaic) of {sizes['M']} tiles. apoptotic-lab analyses one field of "
             "view: export the stitched image or a single tile from ZEN and load that.")
     # read only the plane that is used (index 0 of every non-C/Y/X axis by default)
     want = {d: int(plane.get(d, 0)) for d in sizes if d not in ("C", "Y", "X", "A", "M")}

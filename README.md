@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.png">
-    <img src="docs/assets/banner-light.png" width="100%" alt="CelloType. From fluorescence images to per-cell data, in one browser tab. A 16-bit, three-channel CZI field with 178 nuclei segmented by Cellpose-SAM on the DAPI channel.">
+    <img src="docs/assets/banner-light.png" width="100%" alt="apoptotic-lab. From fluorescence images to per-cell data, in one browser tab. A 16-bit, three-channel CZI field with 178 nuclei segmented by Cellpose-SAM on the DAPI channel.">
   </picture>
 </p>
 
@@ -22,14 +22,14 @@
   <a href="#citation">Citation</a>
 </p>
 
-**CelloType** is a local web application for the quantitative analysis of multichannel
+**apoptotic-lab** is a local web application for the quantitative analysis of multichannel
 fluorescence microscopy images. It takes a dataset from raw files to per-object measurements in a
 single guided workflow, and runs entirely on the researcher's machine.
 
 ## Overview
 
 <p align="center">
-  <img src="docs/assets/fig-workflow.png" width="100%" alt="CelloType workflow in four phases. Input: select images, read files at native bit depth, organise the dataset. Segmentation: choose the channel, object type and model, segment with Cellpose-SAM or StarDist, review and edit masks, with a loop back to segmentation. Quantification: choose measurements, measure every channel with the same masks, export the CSV, parameters JSON and masks. Analysis: analysis settings, then plots and positivity. Orange outlines mark researcher decisions; grey outlines mark automated steps.">
+  <img src="docs/assets/fig-workflow.png" width="100%" alt="apoptotic-lab workflow in four phases. Input: select images, read files at native bit depth, organise the dataset. Segmentation: choose the channel, object type and model, segment with Cellpose-SAM or StarDist, review and edit masks, with a loop back to segmentation. Quantification: choose measurements, measure every channel with the same masks, export the CSV, parameters JSON and masks. Analysis: analysis settings, then plots and positivity. Orange outlines mark researcher decisions; grey outlines mark automated steps.">
 </p>
 <p align="center"><sub><b>Workflow.</b> Orange outlines mark decisions taken by the researcher; grey outlines, automated steps. Masks are reviewed and edited before anything is measured (dashed red: back to segmentation).</sub></p>
 
@@ -52,7 +52,7 @@ next to the results.
 <summary><b>Architecture</b></summary>
 <br>
 <p align="center">
-  <img src="docs/assets/fig-architecture.png" width="100%" alt="CelloType architecture. Six stages (import, inspect, segment, review, measure, analyse) across four layers: interface controls, FastAPI endpoints in app.py, Python modules, and the outputs of each stage, from the channel stack to the measurements CSV, the parameters JSON, the masks and the figures.">
+  <img src="docs/assets/fig-architecture.png" width="100%" alt="apoptotic-lab architecture. Six stages (import, inspect, segment, review, measure, analyse) across four layers: interface controls, FastAPI endpoints in app.py, Python modules, and the outputs of each stage, from the channel stack to the measurements CSV, the parameters JSON, the masks and the figures.">
 </p>
 <p align="center"><sub>At each stage the interface sends a request to a FastAPI endpoint (under <code>/api</code>), a Python module does the work, and its output feeds the next stage. Details in <a href="docs/ARCHITECTURE.md">docs/ARCHITECTURE.md</a>.</sub></p>
 </details>
@@ -64,8 +64,8 @@ Silicon MPS). The Cellpose-SAM weights (about 1.2 GB) are downloaded to `~/.cell
 use.
 
 ```bash
-git clone https://github.com/abrilcode/CelloType.git
-cd CelloType
+git clone https://github.com/abrilcode/apoptotic-lab.git
+cd apoptotic-lab
 python3 -m venv .venv
 source .venv/bin/activate          # Windows (PowerShell): .venv\Scripts\Activate.ps1
 pip install --upgrade pip
@@ -111,9 +111,9 @@ Multi-Channel Nuclear Analysis (Waisman, 2025), on five datasets: 78 fields and 
 nuclei, both mask sets measured with the same code.
 
 <p align="center">
-  <img src="docs/assets/fig-agreement.png" width="100%" alt="Three panels: segmentation agreement per dataset (Dice, F1 and matched IoU, with the Dice threshold of 0.85), nuclei counted by CelloType against the reference, and per-marker intensity correlation.">
+  <img src="docs/assets/fig-agreement.png" width="100%" alt="Three panels: segmentation agreement per dataset (Dice, F1 and matched IoU, with the Dice threshold of 0.85), nuclei counted by apoptotic-lab against the reference, and per-marker intensity correlation.">
 </p>
-<p align="center"><sub>(a) Dice, F1 at IoU ≥ 0.5 and matched IoU per dataset; the dashed line is the Dice threshold (0.85; the F1 threshold was 0.70). (b) Nuclei detected by CelloType against the reference; the band is ±5 %. (c) Pearson r of per-nucleus mean intensity for each marker, on matched nuclei.</sub></p>
+<p align="center"><sub>(a) Dice, F1 at IoU ≥ 0.5 and matched IoU per dataset; the dashed line is the Dice threshold (0.85; the F1 threshold was 0.70). (b) Nuclei detected by apoptotic-lab against the reference; the band is ±5 %. (c) Pearson r of per-nucleus mean intensity for each marker, on matched nuclei.</sub></p>
 
 Every dataset met the thresholds set before the comparison (Dice 0.948 to 0.964, F1 0.942 to
 0.965, count r ≥ 0.991, intensity r ≥ 0.997). This is agreement between two automatic methods,
@@ -128,7 +128,7 @@ times slower than StarDist (on the CPU). Method, per-dataset results and timing 
 | [docs/VALIDATION.md](docs/VALIDATION.md) | Agreement study: method, thresholds, per-dataset results and timing |
 | [docs/OUTPUTS.md](docs/OUTPUTS.md) | Output files, columns, measurements and the parameter record |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Modules by layer and design notes |
-| [CHANGELOG.md](CHANGELOG.md) | Changes since the version evaluated in the thesis ([v1.0.0](https://github.com/abrilcode/CelloType/releases/tag/v1.0.0)) |
+| [CHANGELOG.md](CHANGELOG.md) | Changes since the version evaluated in the thesis ([v1.0.0](https://github.com/abrilcode/apoptotic-lab/releases/tag/v1.0.0)) |
 
 ## Data and privacy
 
@@ -136,16 +136,16 @@ Images never leave the machine: the browser sends them to the local server, whic
 the system temporary folder (`pfcv2_upload_*`) until the operating system clears it. Microscopy
 images and patient-derived data must not be committed to this repository; the `.gitignore`
 excludes common microscopy formats.
-CelloType is research software and is not intended for diagnostic use.
+apoptotic-lab is research software and is not intended for diagnostic use.
 
 ## Citation
 
-CelloType was developed by Abril Herrlein as the final project of the Bioengineering degree at
+apoptotic-lab was developed by Abril Herrlein as the final project of the Bioengineering degree at
 the Instituto Tecnológico de Buenos Aires (ITBA), supervised by Dra. María Andrea Camilletti.
 Citation metadata is also available through "Cite this repository" ([CITATION.cff](CITATION.cff)).
 
 ```bibtex
-@thesis{herrlein2026celloType,
+@thesis{herrlein2026apoptoticlab,
   author      = {Herrlein, Abril},
   title       = {Desarrollo de una plataforma web para segmentaci{\'o}n y cuantificaci{\'o}n
                  de im{\'a}genes de fluorescencia multicanal},
@@ -155,7 +155,7 @@ Citation metadata is also available through "Cite this repository" ([CITATION.cf
 }
 ```
 
-Results produced with CelloType should also cite the segmentation model used:
+Results produced with apoptotic-lab should also cite the segmentation model used:
 Cellpose-SAM (Pachitariu, Rariden and Stringer, bioRxiv 2025,
 [doi:10.1101/2025.04.28.651001](https://doi.org/10.1101/2025.04.28.651001)) and Cellpose
 (Stringer et al., Nature Methods 2021,

@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 import numpy as np
 
 SCHEMA_VERSION = "1.6"   # 1.1: pixel size (P-03a/b), manual_pixel_size_um; 1.2: input planes (P-04a); 1.3: downscale_method (S-05); 1.4: technical_replicate (P-06a); 1.5: engine choice (StarDist); 1.6: channel_names per field (names typed in the interface), StarDist package versions
-APP_NAME = "CelloType"
+APP_NAME = "apoptotic-lab"
 APP_VERSION = "2026.10-post-review"
 NOT_REPRODUCIBLE_NOTE = "Masks were edited manually; this run cannot be reproduced from these parameters alone."
 

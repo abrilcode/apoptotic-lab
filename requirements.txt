@@ -1,4 +1,4 @@
-# CelloType: Python dependencies.
+# apoptotic-lab: Python dependencies.
 # Tested with Python 3.12 (Python 3.10 to 3.12 recommended).
 #
 # GPU note:
