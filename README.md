@@ -85,26 +85,26 @@ that matches the driver before `requirements.txt`. StarDist is optional:
 
 ## Usage
 
-Start the engine and leave its window open:
+1. **Start the engine** (after the [installation](#installation)) and leave its window open:
 
-```bash
-uvicorn app:app --host 127.0.0.1 --port 8010
-```
+   ```bash
+   cd apoptotic-lab && source .venv/bin/activate      # Windows: .venv\Scripts\Activate.ps1
+   uvicorn app:app --host 127.0.0.1 --port 8010
+   ```
 
-Then open the interface, either:
+2. **Open the app at https://apoptotic-lab.vercel.app** and click **Check dependencies**. When
+   everything is in place it opens the start page; if something is missing it says what to install.
+3. **Choose a flow:**
 
-- **https://apoptotic-lab.vercel.app** — the hosted interface. It talks to the engine on your
-  computer; images never leave it. If Chrome asks whether the site may access apps or devices on
-  your network, choose **Allow**. Use Chrome or Edge; other browsers may block a website from
-  reaching a program on your own computer.
-- **http://127.0.0.1:8010** — the same interface, served by the engine itself, with no internet.
+   | Flow | Steps |
+   |---|---|
+   | Single image | Raw data → Segment → Measure → Analysis |
+   | Multiple images | Raw data → Channels → Segment → Measure → Analysis |
 
-If the engine is not running, the hosted interface shows how to install and start it.
-
-| Flow | Steps |
-|---|---|
-| Single image | Raw data → Segment → Measure → Analysis |
-| Multiple images | Raw data → Channels → Segment → Measure → Analysis |
+The app runs in the browser, but the analysis runs in the engine on your computer: images never
+leave it. Use Chrome or Edge, and if the browser asks whether the site may access apps or devices
+on your network, choose **Allow**. Without internet, the engine also serves the same app at
+http://127.0.0.1:8010.
 
 ## Outputs
 
