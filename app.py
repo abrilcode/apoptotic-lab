@@ -313,7 +313,7 @@ async def no_store(request, call_next):
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
 ENGINE_VERSION = 2      # bump when the API changes in a way the hosted interface must know about
-HOSTED_ORIGINS = r"^https://apoptotic-lab\.vercel\.app$|^https://apoptotic-lab(-[a-z0-9]+)*-abril-desk\.vercel\.app$"
+HOSTED_ORIGINS = r"^https://(www\.)?apoptoticlabs\.com$|^https://apoptotic-lab\.vercel\.app$|^https://apoptotic-lab(-[a-z0-9]+)*-abril-desk\.vercel\.app$"
 # Chrome asks before a public site may reach localhost (Private Network Access): the preflight
 # carries Access-Control-Request-Private-Network and needs Access-Control-Allow-Private-Network.
 # Recent Starlette answers it itself (and rejects it unless enabled); older versions ignore it,
